@@ -1,0 +1,98 @@
+════════════════════════════════════════════════════
+  HABITOS — APPS SCRIPT DEPLOY GUIDE (FIXED)
+════════════════════════════════════════════════════
+
+WHY THE JSON MESSAGE APPEARED
+──────────────────────────────
+You deployed Code.gs — that file is ONLY the Sheets
+backend. Its doGet() returns JSON, not a web page.
+
+You need HostCode.gs + an Index.html file in the
+SAME Apps Script project.
+
+COMPLETE STEP-BY-STEP (10 minutes)
+────────────────────────────────────
+
+STEP 1 — Open your existing Apps Script project
+  • Go to https://script.google.com
+  • Click on your "HabitOS" project (or create a new one)
+
+STEP 2 — Replace Code.gs with HostCode.gs
+  • Click on "Code.gs" in the left panel
+  • Press Ctrl+A to select all existing code
+  • Press Delete to clear it
+  • Open HostCode.gs from your Daily Tracker folder in Notepad
+  • Press Ctrl+A → Ctrl+C to copy everything
+  • Go back to Apps Script and paste (Ctrl+V)
+
+STEP 3 — Add the HTML file
+  • In Apps Script, look for the "+" icon next to "Files" in the left panel
+  • Click "+" → choose "HTML"
+  • A dialog appears asking for a name
+  • Type exactly:  Index   (capital I, no spaces, no .html)
+  • Press Enter/OK
+  • A new tab opens called "Index.html" — it will have some placeholder content
+
+STEP 4 — Paste the app HTML into Index.html
+  • Open your Daily Tracker folder on your computer
+  • Find "standalone.html"
+  • Right-click it → "Open with" → Notepad (or VS Code, Notepad++)
+  • Press Ctrl+A to select ALL the content
+  • Press Ctrl+C to copy
+  • Go back to Apps Script → click the "Index.html" tab
+  • Press Ctrl+A to select the existing placeholder content
+  • Press Ctrl+V to paste — the full app replaces it
+  • Press Ctrl+S to save
+
+STEP 5 — Deploy as Web App
+  • Click the blue "Deploy" button (top right)
+  • Choose "New deployment" (NOT "Manage deployments")
+  • Click the gear ⚙️ icon next to "Select type"
+  • Choose "Web app"
+  • Fill in:
+      Description:     HabitOS v2
+      Execute as:      Me (your Google account)
+      Who has access:  Anyone
+  • Click "Deploy"
+  • If a permissions popup appears → click "Authorize access"
+    → choose your Google account → click "Allow"
+
+STEP 6 — Copy your URL
+  • After deploying, a dialog shows your Web App URL
+  • It looks like:
+    https://script.google.com/macros/s/AKfy.../exec
+  • Copy this URL and BOOKMARK it — this is your permanent app!
+
+STEP 7 — Enable Sheets sync (optional)
+  • Open your app at the URL above
+  • Click "Settings" in the left sidebar
+  • Paste that same URL into "Apps Script Web App URL"
+  • Click "Save Settings"
+  • Now "Save to Sheets" will write your daily data to a Google Sheet
+    (a sheet called "HabitOS — Daily Tracker Data" is auto-created)
+
+────────────────────────────────────────────────────
+VERIFICATION
+────────────────────────────────────────────────────
+After deployment, visiting the URL should show your
+habit tracker app — NOT a JSON message.
+
+If you still see JSON: you are visiting the OLD
+deployment URL. The new URL from Step 6 is different.
+Always use the latest deployment URL.
+
+────────────────────────────────────────────────────
+WHAT'S IN EACH FILE
+────────────────────────────────────────────────────
+Code.gs      → Sheets-only backend (NOT for hosting)
+HostCode.gs  → Full hosting: serves the UI + Sheets
+standalone.html → The complete app (paste into Index.html)
+styles.css   → Styling (already embedded in standalone.html)
+app.js       → Core logic (already embedded in standalone.html)
+analytics.js → Charts (already embedded in standalone.html)
+
+For Apps Script hosting, you only need:
+  HostCode.gs  (paste into Code.gs)
+  standalone.html (paste into Index.html)
+
+════════════════════════════════════════════════════

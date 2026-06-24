@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Habit Tracker — Sathiya</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     SIDEBAR NAVIGATION
+════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">⚡</span>
+    <span class="logo-text">HabitOS</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-btn active" data-view="today" onclick="switchView('today', this)">
+      <span class="nav-icon">🏠</span><span class="nav-label">Today</span>
+    </button>
+    <button class="nav-btn" data-view="analytics" onclick="switchView('analytics', this)">
+      <span class="nav-icon">📊</span><span class="nav-label">Analytics</span>
+    </button>
+    <button class="nav-btn" data-view="settings" onclick="switchView('settings', this)">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+      <span id="theme-icon">🌙</span>
+    </button>
+    <div class="sidebar-streak">
+      <span class="streak-fire">🔥</span>
+      <span id="sidebar-streak-count">0</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════ -->
+<main class="main-content">
+
+  <!-- ── MOBILE HEADER ── -->
+  <header class="mobile-header">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <span class="mobile-logo">⚡ HabitOS</span>
+    <button class="theme-toggle-mobile" onclick="toggleTheme()"><span id="theme-icon-mobile">🌙</span></button>
+  </header>
+
+  <!-- ══════════════════════════════════════
+       VIEW: TODAY
+  ══════════════════════════════════════ -->
+  <section class="view active" id="view-today">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="date-nav-section">
+        <h1 class="page-title" id="page-mission-title">Today's Mission</h1>
+        <div class="date-navigator">
+          <button class="date-nav-btn" onclick="navigateDate(-1)" title="Previous day">‹</button>
+          <div class="date-display-wrap">
+            <input type="date" id="date-picker" onchange="setCurrentDateFromPicker(this.value)" style="display:none" />
+            <button class="date-display-btn" onclick="toggleCalendar()">
+              <span class="date-cal-icon">📅</span>
+              <span id="date-display-text">—</span>
+              <span class="date-dropdown-arrow">▾</span>
+            </button>
+          </div>
+          <button class="date-nav-btn" id="next-day-btn" onclick="navigateDate(1)" title="Next day">›</button>
+          <button class="today-btn" id="today-btn" onclick="goToToday()">Today</button>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="fetch-status" id="fetch-status" style="display:none">
+          <span class="fetch-spinner">↻</span>
+          <span id="fetch-status-text">Syncing…</span>
+        </div>
+        <div class="past-day-badge" id="past-day-badge" style="display:none">
+          📅 Past Day
+        </div>
+        <div class="level-badge" id="level-badge">
+          <span class="level-icon">🌱</span>
+          <span id="level-name">Beginner</span>
+        </div>
+        <button class="submit-btn" onclick="submitDay()">
+          <span>💾</span> <span id="save-btn-text">Track for the day</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 7-DAY LOCK BANNER -->
+    <div class="lock-banner" id="lock-banner" style="display:none">
+      🔒 <strong>Locked</strong> — entries older than 7 days cannot be edited. You can still view past data.
+    </div>
+
+    <!-- SCORE OVERVIEW CARDS -->
+    <div class="score-overview">
+      <div class="score-card primary">
+        <div class="score-ring-wrap">
+          <canvas class="score-ring" id="ring-daily" width="100" height="100"></canvas>
+          <div class="score-ring-label">
+            <span class="ring-value" id="score-daily">0</span>
+            <span class="ring-sub">Daily</span>
+          </div>
+        </div>
+        <div class="score-info">
+          <span class="score-title">Daily Score</span>
+          <span class="score-grade" id="grade-daily">—</span>
+        </div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-ring-wrap">
+          <canvas class="score-ring" id="ring-health" width="80" height="80"></canvas>
+          <div class="score-ring-label">
+            <span class="ring-value sm" id="score-health">0</span>
+            <span class="ring-sub">Health</span>
+          </div>
+        </div>
+        <span class="score-title">Health Score</span>
+      </div>
+
+      <div class="score-card">
+        <div class="score-ring-wrap">
+          <canvas class="score-ring" id="ring-productivity" width="80" height="80"></canvas>
+          <div class="score-ring-label">
+            <span class="ring-value sm" id="score-productivity">0</span>
+            <span class="ring-sub">Prod.</span>
+          </div>
+        </div>
+        <span class="score-title">Productivity</span>
+      </div>
+
+      <div class="score-card">
+        <div class="score-ring-wrap">
+          <canvas class="score-ring" id="ring-discipline" width="80" height="80"></canvas>
+          <div class="score-ring-label">
+            <span class="ring-value sm" id="score-discipline">0</span>
+            <span class="ring-sub">Disc.</span>
+          </div>
+        </div>
+        <span class="score-title">Discipline</span>
+      </div>
+    </div>
+
+    <!-- DAILY PROGRESS BAR -->
+    <div class="progress-banner glass-card">
+      <div class="progress-banner-left">
+        <span class="progress-pct" id="completion-pct">0%</span>
+        <span class="progress-label">Completion</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="main-progress-bar" style="width:0%"></div>
+        </div>
+        <div class="progress-markers">
+          <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+        </div>
+      </div>
+      <div class="progress-banner-right">
+        <span class="streak-badge">🔥 <span id="current-streak">0</span> day streak</span>
+      </div>
+    </div>
+
+    <!-- MOTIVATION MESSAGE -->
+    <div class="motivation-card glass-card" id="motivation-card">
+      <span class="motivation-icon">💬</span>
+      <p class="motivation-text" id="motivation-text">Log your habits to unlock today's motivation message.</p>
+    </div>
+
+    <!-- ── ESSENTIAL HABITS ── -->
+    <div class="section-header">
+      <h2>🔴 Essential Habits <span class="weight-tag">50% weight</span></h2>
+    </div>
+
+    <div class="habits-grid" id="essential-habits">
+
+      <!-- Walking -->
+      <div class="habit-card glass-card" id="card-steps">
+        <div class="habit-header">
+          <div class="habit-icon-wrap steps">🚶</div>
+          <div class="habit-meta">
+            <span class="habit-name">Walking</span>
+            <span class="habit-target">Target: 10,000 steps</span>
+          </div>
+          <div class="habit-status" id="status-steps">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill steps-color" id="bar-steps" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-steps">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('steps', -1000)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-steps" value="0" min="0" max="15000"
+              oninput="updateHabit('steps', this.value)" placeholder="0" />
+            <span class="habit-unit">steps</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('steps', 1000)">+</button>
+        </div>
+      </div>
+
+      <!-- Exercise -->
+      <div class="habit-card glass-card" id="card-exercise">
+        <div class="habit-header">
+          <div class="habit-icon-wrap exercise">💪</div>
+          <div class="habit-meta">
+            <span class="habit-name">Exercise</span>
+            <span class="habit-target">Target: 45 min</span>
+          </div>
+          <div class="habit-status" id="status-exercise">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill exercise-color" id="bar-exercise" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-exercise">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('exercise', -5)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-exercise" value="0" min="0" max="120"
+              oninput="updateHabit('exercise', this.value)" placeholder="0" />
+            <span class="habit-unit">min</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('exercise', 5)">+</button>
+        </div>
+      </div>
+
+      <!-- Water -->
+      <div class="habit-card glass-card" id="card-water">
+        <div class="habit-header">
+          <div class="habit-icon-wrap water">💧</div>
+          <div class="habit-meta">
+            <span class="habit-name">Water Intake</span>
+            <span class="habit-target">Target: 4 litres</span>
+          </div>
+          <div class="habit-status" id="status-water">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill water-color" id="bar-water" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-water">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('water', -0.25)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-water" value="0" min="0" max="6" step="0.25"
+              oninput="updateHabit('water', this.value)" placeholder="0" />
+            <span class="habit-unit">litres</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('water', 0.25)">+</button>
+        </div>
+      </div>
+
+      <!-- Sleep -->
+      <div class="habit-card glass-card" id="card-sleep">
+        <div class="habit-header">
+          <div class="habit-icon-wrap sleep">😴</div>
+          <div class="habit-meta">
+            <span class="habit-name">Sleep</span>
+            <span class="habit-target">Target: 7–8 hours</span>
+          </div>
+          <div class="habit-status" id="status-sleep">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill sleep-color" id="bar-sleep" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-sleep">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('sleep', -0.5)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-sleep" value="0" min="0" max="10" step="0.5"
+              oninput="updateHabit('sleep', this.value)" placeholder="0" />
+            <span class="habit-unit">hrs</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('sleep', 0.5)">+</button>
+        </div>
+      </div>
+
+      <!-- Calories -->
+      <div class="habit-card glass-card" id="card-calories">
+        <div class="habit-header">
+          <div class="habit-icon-wrap calories">🔥</div>
+          <div class="habit-meta">
+            <span class="habit-name">Calories</span>
+            <span class="habit-target">Target: 1400–1800 kcal</span>
+          </div>
+          <div class="habit-status" id="status-calories">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill calories-color" id="bar-calories" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-calories">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('calories', -100)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-calories" value="0" min="0" max="5000"
+              oninput="updateHabit('calories', this.value)" placeholder="0" />
+            <span class="habit-unit">kcal</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('calories', 100)">+</button>
+        </div>
+        <div class="habit-warning" id="warn-calories" style="display:none"></div>
+      </div>
+
+      <!-- Protein -->
+      <div class="habit-card glass-card" id="card-protein">
+        <div class="habit-header">
+          <div class="habit-icon-wrap protein">🥩</div>
+          <div class="habit-meta">
+            <span class="habit-name">Protein</span>
+            <span class="habit-target">Target: 90g</span>
+          </div>
+          <div class="habit-status" id="status-protein">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill protein-color" id="bar-protein" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-protein">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('protein', -5)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-protein" value="0" min="0" max="300"
+              oninput="updateHabit('protein', this.value)" placeholder="0" />
+            <span class="habit-unit">grams</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('protein', 5)">+</button>
+        </div>
+        <div class="habit-warning" id="warn-protein" style="display:none"></div>
+      </div>
+
+    </div><!-- /essential-habits -->
+
+    <!-- ── FIRST PRIORITY HABITS ── -->
+    <div class="section-header">
+      <h2>🟠 First Priority Habits <span class="weight-tag">35% weight</span></h2>
+    </div>
+
+    <div class="toggles-grid" id="priority-habits">
+
+      <div class="toggle-card glass-card" id="card-smoking">
+        <div class="toggle-icon">🚭</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">No Smoking</span>
+          <span class="toggle-sub">Stay smoke-free all day</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-smoking" onchange="updateToggle('smoking', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-card glass-card" id="card-drinking">
+        <div class="toggle-icon">🚫🍺</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">No Drinking</span>
+          <span class="toggle-sub">Alcohol-free day</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-drinking" onchange="updateToggle('drinking', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-card glass-card" id="card-onlywater">
+        <div class="toggle-icon">🥤</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">Only Water</span>
+          <span class="toggle-sub">Water only during the day</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-onlywater" onchange="updateToggle('onlywater', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-card glass-card" id="card-sugar">
+        <div class="toggle-icon">🍬</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">No Sugar</span>
+          <span class="toggle-sub">Zero refined sugar</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-sugar" onchange="updateToggle('sugar', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-card glass-card" id="card-junk">
+        <div class="toggle-icon">🚫🍔</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">No Junk Food</span>
+          <span class="toggle-sub">Clean eating only</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-junk" onchange="updateToggle('junk', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+    </div><!-- /priority-habits -->
+
+    <!-- ── SECOND PRIORITY HABITS ── -->
+    <div class="section-header">
+      <h2>🟡 Second Priority Habits <span class="weight-tag">15% weight</span></h2>
+    </div>
+
+    <div class="habits-grid" id="secondary-habits">
+
+      <!-- Study -->
+      <div class="habit-card glass-card" id="card-study">
+        <div class="habit-header">
+          <div class="habit-icon-wrap study">📚</div>
+          <div class="habit-meta">
+            <span class="habit-name">Study</span>
+            <span class="habit-target">Target: 1.5 hours</span>
+          </div>
+          <div class="habit-status" id="status-study">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill study-color" id="bar-study" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-study">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('study', -0.25)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-study" value="0" min="0" max="12" step="0.25"
+              oninput="updateHabit('study', this.value)" placeholder="0" />
+            <span class="habit-unit">hrs</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('study', 0.25)">+</button>
+        </div>
+      </div>
+
+      <!-- Reading -->
+      <div class="habit-card glass-card" id="card-reading">
+        <div class="habit-header">
+          <div class="habit-icon-wrap reading">📖</div>
+          <div class="habit-meta">
+            <span class="habit-name">Reading</span>
+            <span class="habit-target">Target: 2 pages</span>
+          </div>
+          <div class="habit-status" id="status-reading">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill reading-color" id="bar-reading" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-reading">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('reading', -1)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-reading" value="0" min="0" max="200"
+              oninput="updateHabit('reading', this.value)" placeholder="0" />
+            <span class="habit-unit">pages</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('reading', 1)">+</button>
+        </div>
+      </div>
+
+      <!-- Breathing -->
+      <div class="habit-card glass-card" id="card-breathing">
+        <div class="habit-header">
+          <div class="habit-icon-wrap breathing">🧘</div>
+          <div class="habit-meta">
+            <span class="habit-name">Breathing Exercise</span>
+            <span class="habit-target">Target: 5 min</span>
+          </div>
+          <div class="habit-status" id="status-breathing">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill breathing-color" id="bar-breathing" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-breathing">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('breathing', -1)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-breathing" value="0" min="0" max="60"
+              oninput="updateHabit('breathing', this.value)" placeholder="0" />
+            <span class="habit-unit">min</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('breathing', 1)">+</button>
+        </div>
+      </div>
+
+    </div><!-- /secondary-habits -->
+
+    <!-- ── DAILY SUMMARY ── -->
+    <div class="summary-section glass-card">
+      <h2 class="summary-title">📋 Daily Summary</h2>
+      <div class="summary-grid">
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-completed">0/14</span>
+          <span class="stat-label">Habits Done</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-pct">0%</span>
+          <span class="stat-label">Completion</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-streak">0</span>
+          <span class="stat-label">Current Streak</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-best">0</span>
+          <span class="stat-label">Best Streak</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-score">0</span>
+          <span class="stat-label">Daily Score</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-consistency">0%</span>
+          <span class="stat-label">7-day Avg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ACHIEVEMENTS ── -->
+    <div class="section-header">
+      <h2>🏆 Achievements</h2>
+    </div>
+    <div class="badges-grid" id="badges-grid">
+      <!-- Populated by JS -->
+    </div>
+
+  </section><!-- /view-today -->
+
+  <!-- ══════════════════════════════════════
+       VIEW: ANALYTICS
+  ══════════════════════════════════════ -->
+  <section class="view" id="view-analytics">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Analytics</h1>
+        <p class="page-date">Performance insights & trends</p>
+      </div>
+      <div class="analytics-period">
+        <button class="period-btn active" onclick="setPeriod('week', this)">7 Days</button>
+        <button class="period-btn" onclick="setPeriod('month', this)">30 Days</button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">📈</span>
+        <span class="kpi-value" id="kpi-avg-score">—</span>
+        <span class="kpi-label">Avg Daily Score</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">🔥</span>
+        <span class="kpi-value" id="kpi-streak">0</span>
+        <span class="kpi-label">Current Streak</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">🏅</span>
+        <span class="kpi-value" id="kpi-best-streak">0</span>
+        <span class="kpi-label">Best Streak</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">✅</span>
+        <span class="kpi-value" id="kpi-completion">—</span>
+        <span class="kpi-label">Avg Completion</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">⭐</span>
+        <span class="kpi-value" id="kpi-best-day">—</span>
+        <span class="kpi-label">Best Day Score</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">📅</span>
+        <span class="kpi-value" id="kpi-days-logged">0</span>
+        <span class="kpi-label">Days Logged</span>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="charts-row">
+      <div class="chart-card glass-card chart-wide">
+        <h3 class="chart-title">📉 Daily Score Trend</h3>
+        <canvas id="chart-trend" height="120"></canvas>
+      </div>
+      <div class="chart-card glass-card">
+        <h3 class="chart-title">🍩 Habit Category Mix</h3>
+        <canvas id="chart-donut" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="charts-row">
+      <div class="chart-card glass-card">
+        <h3 class="chart-title">🕸️ Habit Radar</h3>
+        <canvas id="chart-radar" height="220"></canvas>
+      </div>
+      <div class="chart-card glass-card chart-wide">
+        <h3 class="chart-title">🔥 Consistency Heatmap (Last 30 Days)</h3>
+        <div id="heatmap-container" class="heatmap-container"></div>
+      </div>
+    </div>
+
+    <!-- Charts Row 3 -->
+    <div class="charts-row">
+      <div class="chart-card glass-card chart-full">
+        <h3 class="chart-title">📊 Individual Habit Completion (%)</h3>
+        <canvas id="chart-habits-bar" height="100"></canvas>
+      </div>
+    </div>
+
+  </section><!-- /view-analytics -->
+
+  <!-- ══════════════════════════════════════
+       VIEW: SETTINGS
+  ══════════════════════════════════════ -->
+  <section class="view" id="view-settings">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-date">Configure your tracker</p>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+
+      <div class="settings-card glass-card">
+        <h3>🔗 Google Sheets Integration</h3>
+        <p class="settings-desc">Paste your Google Apps Script Web App URL below to enable automatic data sync.</p>
+        <div class="settings-field">
+          <label>Apps Script Web App URL</label>
+          <input type="url" id="sheets-url" class="settings-input" placeholder="https://script.google.com/macros/s/..." />
+        </div>
+        <div class="settings-field">
+          <label>Google Sheet ID (for reference)</label>
+          <input type="text" id="sheet-id" class="settings-input" placeholder="1BxiMVs0XRA..." />
+        </div>
+        <button class="btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        <button class="btn-secondary" onclick="testConnection()">🧪 Test Connection</button>
+        <div id="connection-status" class="connection-status"></div>
+      </div>
+
+      <div class="settings-card glass-card">
+        <h3>👤 Profile</h3>
+        <div class="settings-field">
+          <label>Your Name</label>
+          <input type="text" id="user-name" class="settings-input" placeholder="Sathiya" value="Sathiya" />
+        </div>
+        <div class="settings-field">
+          <label>Daily Start Time</label>
+          <input type="time" id="start-time" class="settings-input" value="06:00" />
+        </div>
+        <button class="btn-primary" onclick="saveProfile()">💾 Save Profile</button>
+      </div>
+
+      <div class="settings-card glass-card">
+        <h3>📤 Data Management</h3>
+        <p class="settings-desc">Export your local history or clear cached data.</p>
+        <button class="btn-secondary" onclick="exportData()">📥 Export JSON</button>
+        <button class="btn-danger" onclick="clearHistory()">🗑️ Clear History</button>
+      </div>
+
+      <div class="settings-card glass-card">
+        <h3>ℹ️ Setup Instructions</h3>
+        <ol class="setup-steps">
+          <li>Open <strong>Google Sheets</strong> and create a new blank sheet.</li>
+          <li>Go to <strong>Extensions → Apps Script</strong>.</li>
+          <li>Replace the default code with the contents of <code>Code.gs</code>.</li>
+          <li>Click <strong>Deploy → New deployment → Web app</strong>.</li>
+          <li>Set <em>Execute as</em>: Me. Set <em>Who has access</em>: Anyone.</li>
+          <li>Copy the Web App URL and paste it above.</li>
+          <li>Click <strong>Test Connection</strong> to verify.</li>
+        </ol>
+      </div>
+
+    </div>
+  </section><!-- /view-settings -->
+
+</main><!-- /main-content -->
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast"></div>
+
+<!-- SUBMIT MODAL / OVERLAY -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+  <div class="modal-card glass-card" onclick="event.stopPropagation()">
+    <h2 id="modal-title">Day Saved ✅</h2>
+    <p id="modal-body"></p>
+    <button class="btn-primary" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="analytics.js"></script>
+</body>
+</html>

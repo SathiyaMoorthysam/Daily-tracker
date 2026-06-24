@@ -1,0 +1,3028 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Habit Tracker — Sathiya</title>
+<style>
+/* ════════════════════════════════════════════════
+   HABITOS — PREMIUM DAILY HABIT TRACKER STYLES
+   Glassmorphism · Dark/Light · Mobile-First
+════════════════════════════════════════════════ */
+
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+/* ════════════════════════════════════════════════
+   CSS VARIABLES — DARK THEME (default)
+════════════════════════════════════════════════ */
+:root,
+[data-theme="dark"] {
+  --bg-base:         #0d0f17;
+  --bg-secondary:    #12151f;
+  --bg-card:         rgba(255,255,255,0.04);
+  --bg-card-hover:   rgba(255,255,255,0.07);
+  --border-color:    rgba(255,255,255,0.08);
+  --border-glow:     rgba(99,102,241,0.3);
+
+  --text-primary:    #f0f2ff;
+  --text-secondary:  #8b8fa8;
+  --text-muted:      #565a75;
+
+  --accent:          #6366f1;
+  --accent-glow:     rgba(99,102,241,0.25);
+  --accent-2:        #22d3ee;
+  --accent-3:        #a855f7;
+
+  --green:           #10b981;
+  --yellow:          #f59e0b;
+  --red:             #ef4444;
+  --orange:          #f97316;
+  --blue:            #3b82f6;
+  --purple:          #a855f7;
+  --cyan:            #06b6d4;
+  --pink:            #ec4899;
+
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md:  0 8px 32px rgba(0,0,0,0.5);
+  --shadow-lg:  0 20px 60px rgba(0,0,0,0.6);
+
+  --sidebar-width: 220px;
+  --radius:        16px;
+  --radius-sm:     10px;
+  --radius-xs:     6px;
+}
+
+[data-theme="light"] {
+  --bg-base:         #f0f2ff;
+  --bg-secondary:    #e8eaf6;
+  --bg-card:         rgba(255,255,255,0.7);
+  --bg-card-hover:   rgba(255,255,255,0.9);
+  --border-color:    rgba(0,0,0,0.08);
+  --border-glow:     rgba(99,102,241,0.2);
+
+  --text-primary:    #1a1d2e;
+  --text-secondary:  #5c6080;
+  --text-muted:      #9097b8;
+
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md:  0 8px 32px rgba(0,0,0,0.1);
+  --shadow-lg:  0 20px 60px rgba(0,0,0,0.12);
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+/* ════════════════════════════════════════════════
+   GLASS CARD
+════════════════════════════════════════════════ */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.glass-card:hover {
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* ════════════════════════════════════════════════
+   LAYOUT — SIDEBAR + MAIN
+════════════════════════════════════════════════ */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  z-index: 100;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 28px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 20px;
+}
+.logo-icon { font-size: 24px; }
+.logo-text {
+  font-size: 20px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+.nav-btn:hover { background: var(--bg-card); color: var(--text-primary); }
+.nav-btn.active {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 1px solid rgba(99,102,241,0.2);
+}
+.nav-icon { font-size: 18px; }
+.nav-label { font-size: 14px; }
+
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.theme-toggle, .theme-toggle-mobile {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.theme-toggle:hover { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+
+.sidebar-streak {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--orange);
+}
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  padding: 32px 32px 60px;
+  max-width: 1400px;
+}
+
+/* ════════════════════════════════════════════════
+   MOBILE HEADER (hidden on desktop)
+════════════════════════════════════════════════ */
+.mobile-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky; top: 0; z-index: 90;
+  margin: -32px -32px 32px;
+}
+.menu-btn {
+  background: none; border: none; font-size: 22px;
+  color: var(--text-primary); cursor: pointer;
+}
+.mobile-logo { font-size: 18px; font-weight: 800; color: var(--accent); }
+
+/* ════════════════════════════════════════════════
+   VIEWS
+════════════════════════════════════════════════ */
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════════════
+   PAGE HEADER
+════════════════════════════════════════════════ */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-date { color: var(--text-secondary); font-size: 13px; margin-top: 2px; }
+
+.header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+.level-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(99,102,241,0.15));
+  border: 1px solid rgba(168,85,247,0.3);
+  font-size: 13px; font-weight: 600; color: var(--purple);
+}
+
+.submit-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-3));
+  color: #fff;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: all 0.2s;
+}
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px var(--accent-glow);
+}
+.submit-btn:active { transform: translateY(0); }
+
+/* ════════════════════════════════════════════════
+   SCORE OVERVIEW — RINGS
+════════════════════════════════════════════════ */
+.score-overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.score-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.score-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  opacity: 0.5;
+}
+.score-card.primary::before { opacity: 1; }
+.score-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+.score-ring-wrap {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.score-ring { display: block; }
+.score-ring-label {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center;
+  line-height: 1.1;
+}
+.ring-value {
+  font-size: 22px; font-weight: 800;
+  color: var(--text-primary);
+}
+.ring-value.sm { font-size: 18px; }
+.ring-sub { font-size: 9px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.score-title { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.score-grade {
+  font-size: 11px; font-weight: 700; padding: 2px 8px;
+  border-radius: 50px; background: var(--accent-glow);
+  color: var(--accent);
+}
+.score-info { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+
+/* ════════════════════════════════════════════════
+   PROGRESS BANNER
+════════════════════════════════════════════════ */
+.progress-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.progress-banner-left {
+  display: flex; flex-direction: column;
+  min-width: 64px;
+}
+.progress-pct { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
+.progress-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+.progress-bar-wrap { flex: 1; }
+.progress-bar-track {
+  height: 12px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--green));
+  border-radius: 50px;
+  transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+.progress-markers {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--text-muted); padding: 0 2px;
+}
+.progress-banner-right { margin-left: auto; }
+.streak-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: rgba(249,115,22,0.15);
+  border: 1px solid rgba(249,115,22,0.3);
+  font-size: 14px; font-weight: 700; color: var(--orange);
+  white-space: nowrap;
+}
+
+/* ════════════════════════════════════════════════
+   MOTIVATION CARD
+════════════════════════════════════════════════ */
+.motivation-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  border-left: 3px solid var(--accent);
+  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(34,211,238,0.04));
+}
+.motivation-icon { font-size: 24px; flex-shrink: 0; }
+.motivation-text {
+  font-size: 15px; font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ════════════════════════════════════════════════
+   SECTION HEADER
+════════════════════════════════════════════════ */
+.section-header {
+  margin: 28px 0 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-header h2 {
+  font-size: 16px; font-weight: 700;
+  color: var(--text-primary);
+  display: flex; align-items: center; gap: 10px;
+}
+.weight-tag {
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 50px;
+  background: rgba(99,102,241,0.15);
+  color: var(--accent);
+  border: 1px solid rgba(99,102,241,0.2);
+}
+
+/* ════════════════════════════════════════════════
+   HABIT CARDS GRID
+════════════════════════════════════════════════ */
+.habits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.habit-card {
+  padding: 20px;
+  transition: all 0.25s;
+  animation: cardIn 0.4s ease both;
+}
+.habit-card.completed {
+  border-color: rgba(16,185,129,0.3);
+  background: rgba(16,185,129,0.05);
+}
+
+/* ── Warning state ── */
+.habit-card.warn-card {
+  border-color: rgba(239,68,68,0.45);
+  background: rgba(239,68,68,0.06);
+}
+.habit-warning {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: var(--red, #ef4444);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  animation: fadeIn 0.2s ease;
+}
+.habit-card.completed::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 1px rgba(16,185,129,0.3);
+  pointer-events: none;  /* let clicks pass through to buttons */
+  z-index: 0;
+}
+/* Ensure input row is always clickable above the ::before overlay */
+.habit-input-row { position: relative; z-index: 1; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.habit-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px;
+}
+.habit-icon-wrap {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.steps     { background: rgba(59,130,246,0.15); }
+.exercise  { background: rgba(239,68,68,0.15); }
+.water     { background: rgba(6,182,212,0.15); }
+.sleep     { background: rgba(168,85,247,0.15); }
+.calories  { background: rgba(249,115,22,0.15); }
+.protein   { background: rgba(16,185,129,0.15); }
+.study     { background: rgba(234,179,8,0.15); }
+.reading   { background: rgba(236,72,153,0.15); }
+.breathing { background: rgba(34,211,238,0.15); }
+
+.habit-meta { flex: 1; }
+.habit-name { display: block; font-size: 14px; font-weight: 600; }
+.habit-target { display: block; font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+.habit-status {
+  font-size: 20px;
+  transition: transform 0.3s;
+}
+.habit-status.done { transform: scale(1.2); }
+
+/* Progress bar */
+.habit-progress {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.habit-bar-track {
+  flex: 1; height: 6px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 50px; overflow: hidden;
+}
+.habit-bar-fill {
+  height: 100%; border-radius: 50px;
+  transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.steps-color     { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+.exercise-color  { background: linear-gradient(90deg, #ef4444, #fb923c); }
+.water-color     { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+.sleep-color     { background: linear-gradient(90deg, #a855f7, #c084fc); }
+.calories-color  { background: linear-gradient(90deg, #f97316, #fb923c); }
+.protein-color   { background: linear-gradient(90deg, #10b981, #34d399); }
+.study-color     { background: linear-gradient(90deg, #eab308, #facc15); }
+.reading-color   { background: linear-gradient(90deg, #ec4899, #f472b6); }
+.breathing-color { background: linear-gradient(90deg, #06b6d4, #67e8f9); }
+
+.habit-pct { font-size: 12px; font-weight: 700; color: var(--text-secondary); min-width: 34px; text-align: right; }
+
+/* Input row */
+.habit-input-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.qty-btn {
+  width: 38px; height: 38px;
+  border-radius: 10px; border: 1px solid var(--border-color);
+  background: var(--bg-card); color: var(--text-primary);
+  font-size: 20px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+  flex-shrink: 0;
+  touch-action: manipulation;   /* eliminates 300ms mobile tap delay */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.qty-btn:hover  { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+.qty-btn:active { transform: scale(0.88); background: var(--accent-glow); border-color: var(--accent); }
+
+.habit-input-wrap {
+  flex: 1; position: relative;
+  display: flex; align-items: center;
+}
+.habit-input {
+  width: 100%; padding: 8px 40px 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  font-size: 15px; font-weight: 600;
+  font-family: inherit;
+  text-align: center;
+  transition: border-color 0.2s;
+  -moz-appearance: textfield;
+}
+.habit-input::-webkit-outer-spin-button,
+.habit-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.habit-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.habit-unit {
+  position: absolute; right: 10px;
+  font-size: 10px; color: var(--text-muted); font-weight: 500;
+  pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════
+   TOGGLE GRID (First Priority)
+════════════════════════════════════════════════ */
+.toggles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.toggle-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.toggle-card.active-toggle {
+  border-color: rgba(16,185,129,0.4);
+  background: rgba(16,185,129,0.06);
+}
+.toggle-icon { font-size: 24px; flex-shrink: 0; }
+.toggle-meta { flex: 1; }
+.toggle-name { display: block; font-size: 14px; font-weight: 600; }
+.toggle-sub { display: block; font-size: 11px; color: var(--text-muted); }
+
+/* Toggle Switch */
+.toggle-switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50px; border: 1px solid var(--border-color);
+  transition: 0.3s;
+  cursor: pointer;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  left: 2px; bottom: 2px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: rgba(16,185,129,0.2);
+  border-color: var(--green);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(22px);
+  background: var(--green);
+  box-shadow: 0 0 8px rgba(16,185,129,0.5);
+}
+
+/* ════════════════════════════════════════════════
+   DAILY SUMMARY
+════════════════════════════════════════════════ */
+.summary-section {
+  padding: 24px 28px;
+  margin-top: 28px;
+}
+.summary-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
+}
+.summary-stat {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 14px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-color);
+}
+.stat-value { font-size: 24px; font-weight: 800; color: var(--accent); }
+.stat-label { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 2px; }
+
+/* ════════════════════════════════════════════════
+   BADGES / ACHIEVEMENTS
+════════════════════════════════════════════════ */
+.badges-grid {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin-top: 4px;
+}
+.badge {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  border-radius: 50px;
+  font-size: 13px; font-weight: 600;
+  transition: all 0.2s;
+  cursor: default;
+}
+.badge.earned {
+  background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2));
+  border: 1px solid rgba(99,102,241,0.4);
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.15);
+}
+.badge.locked {
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed var(--border-color);
+  color: var(--text-muted);
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+.badge-icon { font-size: 18px; }
+
+/* ════════════════════════════════════════════════
+   ANALYTICS VIEW
+════════════════════════════════════════════════ */
+.analytics-period { display: flex; gap: 8px; }
+.period-btn {
+  padding: 8px 18px;
+  border-radius: 50px; border: 1px solid var(--border-color);
+  background: var(--bg-card); color: var(--text-secondary);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s;
+}
+.period-btn.active, .period-btn:hover {
+  background: var(--accent-glow); border-color: var(--accent); color: var(--accent);
+}
+
+/* KPI Cards */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 14px; gap: 6px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.kpi-icon { font-size: 24px; }
+.kpi-value { font-size: 26px; font-weight: 800; color: var(--text-primary); }
+.kpi-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Charts */
+.charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.chart-card {
+  padding: 22px;
+  min-height: 200px;
+}
+.chart-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary); }
+.chart-wide { grid-column: span 1; }
+.chart-full { grid-column: 1 / -1; }
+
+/* Heatmap */
+.heatmap-container {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  align-content: flex-start;
+}
+.heat-cell {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  title-content: attr(title);
+  cursor: default;
+  transition: transform 0.15s;
+}
+.heat-cell:hover { transform: scale(1.4); z-index: 2; }
+.heat-0  { background: rgba(255,255,255,0.05); }
+.heat-1  { background: rgba(16,185,129,0.2); }
+.heat-2  { background: rgba(16,185,129,0.4); }
+.heat-3  { background: rgba(16,185,129,0.65); }
+.heat-4  { background: rgba(16,185,129,0.9); }
+/* Light theme: heat cells need visible contrast */
+[data-theme="light"] .heat-0  { background: rgba(0,0,0,0.07); }
+[data-theme="light"] .heat-1  { background: rgba(16,185,129,0.25); }
+[data-theme="light"] .heat-2  { background: rgba(16,185,129,0.5); }
+[data-theme="light"] .heat-3  { background: rgba(16,185,129,0.75); }
+[data-theme="light"] .heat-4  { background: rgba(16,185,129,1); }
+
+/* ════════════════════════════════════════════════
+   SETTINGS VIEW
+════════════════════════════════════════════════ */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 20px;
+}
+.settings-card {
+  padding: 24px;
+}
+.settings-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+.settings-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+.settings-field { margin-bottom: 14px; }
+.settings-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.settings-input {
+  width: 100%; padding: 10px 14px;
+  border-radius: 8px; border: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary); font-family: inherit; font-size: 14px;
+  transition: border-color 0.2s;
+}
+.settings-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+.connection-status { margin-top: 12px; font-size: 13px; font-weight: 500; }
+.connection-status.ok { color: var(--green); }
+.connection-status.err { color: var(--red); }
+
+.setup-steps { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+.setup-steps li { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.setup-steps strong { color: var(--text-primary); }
+.setup-steps code {
+  background: rgba(255,255,255,0.08);
+  padding: 1px 6px; border-radius: 4px;
+  font-size: 12px; font-family: monospace;
+}
+
+/* Buttons */
+.btn-primary, .btn-secondary, .btn-danger {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 8px; border: none;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+  margin-right: 8px; margin-top: 8px;
+}
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px var(--accent-glow); }
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-secondary { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--red); }
+.btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+/* ════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════ */
+.toast {
+  position: fixed; bottom: 28px; right: 28px; z-index: 1000;
+  padding: 14px 22px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  font-size: 14px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.error   { border-color: var(--red);   color: var(--red);   }
+.toast.info    { border-color: var(--accent); color: var(--accent); }
+
+/* ════════════════════════════════════════════════
+   MODAL
+════════════════════════════════════════════════ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+.modal-card {
+  padding: 36px;
+  max-width: 440px; width: 90%;
+  text-align: center;
+  animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes modalIn {
+  from { opacity:0; transform: scale(0.85) translateY(20px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+.modal-card h2 { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+.modal-card p  { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; }
+
+/* ════════════════════════════════════════════════
+   SCROLLBAR
+════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 50px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE — TABLET
+════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .score-overview { grid-template-columns: 1fr 1fr; }
+  .charts-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 860px) {
+  :root { --sidebar-width: 0px; }
+  .sidebar {
+    transform: translateX(-220px);
+    width: 220px;
+    z-index: 200;
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; padding: 0 16px 60px; }
+  .mobile-header { display: flex; }
+  .kpi-row { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE — MOBILE
+════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .main-content { padding: 0 12px 60px; }
+  .score-overview { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .score-card { padding: 14px 12px; }
+  .habits-grid { grid-template-columns: 1fr; }
+  .toggles-grid { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(3, 1fr); }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .progress-banner { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .progress-banner-right { margin-left: 0; }
+  .settings-grid { grid-template-columns: 1fr; }
+  .page-title { font-size: 22px; }
+  .page-header { flex-direction: column; }
+  .ring-value { font-size: 16px; }
+  .ring-value.sm { font-size: 14px; }
+}
+
+/* ════════════════════════════════════════════════
+   ANIMATED GRADIENT BACKGROUND BLOB
+════════════════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed; top: -30vh; right: -20vw;
+  width: 60vw; height: 60vw; max-width: 700px; max-height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+  animation: blobFloat 12s ease-in-out infinite;
+}
+body::after {
+  content: '';
+  position: fixed; bottom: -20vh; left: -10vw;
+  width: 50vw; height: 50vw; max-width: 600px; max-height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168,85,247,0.05) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+  animation: blobFloat 16s ease-in-out infinite reverse;
+}
+@keyframes blobFloat {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  50%       { transform: translate(2%, 3%) scale(1.05); }
+}
+
+/* Ensure content is above background blobs */
+.main-content { position: relative; z-index: 1; }
+/* sidebar already has position:fixed + z-index:100 above — do NOT add position:relative here */
+.toast { position: fixed; z-index: 1000; }
+.modal-overlay { z-index: 200; }
+
+/* ════════════════════════════════════════════════
+   DATE NAVIGATOR
+════════════════════════════════════════════════ */
+.date-nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.date-navigator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.date-nav-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 20px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.date-nav-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+.date-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.date-display-wrap { position: relative; }
+.date-display-wrap input[type="date"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0; height: 0;
+}
+
+.date-display-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.date-display-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+.date-cal-icon { font-size: 14px; }
+
+.today-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.today-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.today-btn.active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Past-day badge */
+.past-day-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: 50px;
+  background: rgba(234,179,8,0.12);
+  border: 1px solid rgba(234,179,8,0.35);
+  color: var(--yellow);
+  font-size: 12px; font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Fetch / sync status */
+.fetch-status {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px;
+  border-radius: 50px;
+  background: rgba(99,102,241,0.12);
+  border: 1px solid rgba(99,102,241,0.25);
+  color: var(--accent);
+  font-size: 12px; font-weight: 600;
+}
+.fetch-spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  font-size: 14px;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Analytics sync banner */
+.analytics-sync-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  background: rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.2);
+  margin-bottom: 20px;
+  font-size: 13px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.analytics-sync-banner .sync-info { color: var(--text-secondary); }
+.analytics-sync-banner .sync-info strong { color: var(--accent); }
+.btn-sync {
+  padding: 7px 16px;
+  border-radius: 8px; border: none;
+  background: var(--accent); color: #fff;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: opacity 0.2s; font-family: inherit;
+  white-space: nowrap;
+}
+.btn-sync:hover { opacity: 0.85; }
+.btn-sync:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* No-data overlay for analytics */
+.chart-loading {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 150px;
+  color: var(--text-muted); font-size: 13px;
+  gap: 8px;
+}
+
+/* ── LIGHT THEME ADJUSTMENTS ── */
+[data-theme="light"] body::before {
+  background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
+}
+/* ════════════════════════════════════════════════
+   DATE NAVIGATOR — Custom Calendar Popup
+════════════════════════════════════════════════ */
+.date-display-wrap { position: relative; }
+
+.date-display-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 14px;
+  background: var(--glass-bg); backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 10px; color: var(--text-primary);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap;
+  touch-action: manipulation; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.date-display-btn:hover { border-color: var(--accent); background: var(--accent-glow); }
+.date-dropdown-arrow { font-size: 10px; color: var(--text-muted); margin-left: 2px; }
+
+/* Calendar popup */
+.cal-popup {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%; transform: translateX(-50%);
+  z-index: 400;
+  min-width: 272px;
+  padding: 16px;
+  border-radius: 16px;
+  animation: fadeIn 0.15s ease;
+}
+
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month-label {
+  font-size: 14px; font-weight: 700; color: var(--text-primary);
+  letter-spacing: 0.3px;
+}
+.cal-nav {
+  width: 30px; height: 30px; border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--glass-bg); color: var(--text-primary);
+  font-size: 16px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  transition: all 0.12s; touch-action: manipulation;
+}
+.cal-nav:hover:not([disabled]) { border-color: var(--accent); color: var(--accent); }
+.cal-nav[disabled] { opacity: 0.3; cursor: not-allowed; }
+
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 2px; margin-bottom: 12px;
+}
+.cal-dow {
+  font-size: 10px; font-weight: 600; color: var(--text-muted);
+  text-align: center; padding: 4px 0; letter-spacing: 0.5px;
+}
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  border-radius: 8px; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.1s; color: var(--text-primary);
+  touch-action: manipulation;
+}
+.cal-day:hover:not(.cal-future) {
+  background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent);
+}
+.cal-day.cal-today {
+  border: 1.5px solid var(--accent); color: var(--accent); font-weight: 700;
+}
+.cal-day.cal-selected {
+  background: var(--accent); color: #fff; font-weight: 700; border-radius: 8px;
+}
+.cal-day.cal-has-data::after {
+  content: '•'; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  font-size: 8px; color: var(--green);
+}
+.cal-day.cal-has-data { position: relative; }
+.cal-day.cal-future {
+  color: var(--text-muted); opacity: 0.3; cursor: not-allowed;
+}
+
+.cal-today-btn {
+  width: 100%; padding: 8px; border-radius: 8px;
+  border: 1px solid var(--accent); background: var(--accent);
+  color: #fff; font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; margin-top: 4px;
+  touch-action: manipulation;
+  transition: opacity 0.2s;
+}
+.cal-today-btn:hover { opacity: 0.85; }
+
+/* ════════════════════════════
+</style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     SIDEBAR NAVIGATION
+════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">⚡</span>
+    <span class="logo-text">HabitOS</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-btn active" data-view="today" onclick="switchView('today', this)">
+      <span class="nav-icon">🏠</span><span class="nav-label">Today</span>
+    </button>
+    <button class="nav-btn" data-view="analytics" onclick="switchView('analytics', this)">
+      <span class="nav-icon">📊</span><span class="nav-label">Analytics</span>
+    </button>
+    <button class="nav-btn" data-view="settings" onclick="switchView('settings', this)">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+      <span id="theme-icon">🌙</span>
+    </button>
+    <div class="sidebar-streak">
+      <span class="streak-fire">🔥</span>
+      <span id="sidebar-streak-count">0</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════ -->
+<main class="main-content">
+
+  <!-- ── MOBILE HEADER ── -->
+  <header class="mobile-header">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <span class="mobile-logo">⚡ HabitOS</span>
+    <button class="theme-toggle-mobile" onclick="toggleTheme()"><span id="theme-icon-mobile">🌙</span></button>
+  </header>
+
+  <!-- ══════════════════════════════════════
+       VIEW: TODAY
+  ══════════════════════════════════════ -->
+  <section class="view active" id="view-today">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="date-nav-section">
+        <h1 class="page-title" id="page-mission-title">Today's Mission</h1>
+        <div class="date-navigator">
+          <button class="date-nav-btn" onclick="navigateDate(-1)" title="Previous day">‹</button>
+          <div class="date-display-wrap">
+            <input type="date" id="date-picker" onchange="setCurrentDateFromPicker(this.value)" style="display:none" />
+            <button class="date-display-btn" onclick="toggleCalendar()">
+              <span class="date-cal-icon">📅</span>
+              <span id="date-display-text">—</span>
+              <span class="date-dropdown-arrow">▾</span>
+            </button>
+          </div>
+          <button class="date-nav-btn" id="next-day-btn" onclick="navigateDate(1)" title="Next day">›</button>
+          <button class="today-btn" id="today-btn" onclick="goToToday()">Today</button>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="fetch-status" id="fetch-status" style="display:none">
+          <span class="fetch-spinner">↻</span>
+          <span id="fetch-status-text">Syncing…</span>
+        </div>
+        <div class="past-day-badge" id="past-day-badge" style="display:none">
+          📅 Past Day
+        </div>
+        <div class="level-badge" id="level-badge">
+          <span class="level-icon">🌱</span>
+          <span id="level-name">Beginner</span>
+        </div>
+        <button class="submit-btn" onclick="submitDay()">
+          <span>💾</span> <span id="save-btn-text">Track for the day</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 7-DAY LOCK BANNER -->
+    <div class="lock-banner" id="lock-banner" style="display:none">
+      🔒 <strong>Locked</strong> — entries older than 7 days cannot be edited. You can still view past data.
+    </div>
+
+    <!-- SCORE OVERVIEW CARDS -->
+    <div class="score-overview">
+      <div class="score-card primary">
+        <div class="score-ring-wrap">
+          <canvas class="score-ring" id="ring-daily" width="100" height="100"></canvas>
+          <div class="score-ring-label">
+            <span class="ring-value" id="score-daily">0</span>
+            <span class="ring-sub">Daily</span>
+          </div>
+        </div>
+        <div class="score-info">
+          <span class="score-title">Daily Score</span>
+          <span class="score-grade" id="grade-daily">—</span>
+        </div>
+      </div>
+
+      <div class="score-card">
+        <div class="score-ring-wrap">
+          <canvas class="score-ring" id="ring-health" width="80" height="80"></canvas>
+          <div class="score-ring-label">
+            <span class="ring-value sm" id="score-health">0</span>
+            <span class="ring-sub">Health</span>
+          </div>
+        </div>
+        <span class="score-title">Health Score</span>
+      </div>
+
+      <div class="score-card">
+        <div class="score-ring-wrap">
+          <canvas class="score-ring" id="ring-productivity" width="80" height="80"></canvas>
+          <div class="score-ring-label">
+            <span class="ring-value sm" id="score-productivity">0</span>
+            <span class="ring-sub">Prod.</span>
+          </div>
+        </div>
+        <span class="score-title">Productivity</span>
+      </div>
+
+      <div class="score-card">
+        <div class="score-ring-wrap">
+          <canvas class="score-ring" id="ring-discipline" width="80" height="80"></canvas>
+          <div class="score-ring-label">
+            <span class="ring-value sm" id="score-discipline">0</span>
+            <span class="ring-sub">Disc.</span>
+          </div>
+        </div>
+        <span class="score-title">Discipline</span>
+      </div>
+    </div>
+
+    <!-- DAILY PROGRESS BAR -->
+    <div class="progress-banner glass-card">
+      <div class="progress-banner-left">
+        <span class="progress-pct" id="completion-pct">0%</span>
+        <span class="progress-label">Completion</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="main-progress-bar" style="width:0%"></div>
+        </div>
+        <div class="progress-markers">
+          <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+        </div>
+      </div>
+      <div class="progress-banner-right">
+        <span class="streak-badge">🔥 <span id="current-streak">0</span> day streak</span>
+      </div>
+    </div>
+
+    <!-- MOTIVATION MESSAGE -->
+    <div class="motivation-card glass-card" id="motivation-card">
+      <span class="motivation-icon">💬</span>
+      <p class="motivation-text" id="motivation-text">Log your habits to unlock today's motivation message.</p>
+    </div>
+
+    <!-- ── ESSENTIAL HABITS ── -->
+    <div class="section-header">
+      <h2>🔴 Essential Habits <span class="weight-tag">50% weight</span></h2>
+    </div>
+
+    <div class="habits-grid" id="essential-habits">
+
+      <!-- Walking -->
+      <div class="habit-card glass-card" id="card-steps">
+        <div class="habit-header">
+          <div class="habit-icon-wrap steps">🚶</div>
+          <div class="habit-meta">
+            <span class="habit-name">Walking</span>
+            <span class="habit-target">Target: 10,000 steps</span>
+          </div>
+          <div class="habit-status" id="status-steps">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill steps-color" id="bar-steps" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-steps">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('steps', -1000)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-steps" value="0" min="0" max="15000"
+              oninput="updateHabit('steps', this.value)" placeholder="0" />
+            <span class="habit-unit">steps</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('steps', 1000)">+</button>
+        </div>
+      </div>
+
+      <!-- Exercise -->
+      <div class="habit-card glass-card" id="card-exercise">
+        <div class="habit-header">
+          <div class="habit-icon-wrap exercise">💪</div>
+          <div class="habit-meta">
+            <span class="habit-name">Exercise</span>
+            <span class="habit-target">Target: 45 min</span>
+          </div>
+          <div class="habit-status" id="status-exercise">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill exercise-color" id="bar-exercise" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-exercise">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('exercise', -5)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-exercise" value="0" min="0" max="120"
+              oninput="updateHabit('exercise', this.value)" placeholder="0" />
+            <span class="habit-unit">min</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('exercise', 5)">+</button>
+        </div>
+      </div>
+
+      <!-- Water -->
+      <div class="habit-card glass-card" id="card-water">
+        <div class="habit-header">
+          <div class="habit-icon-wrap water">💧</div>
+          <div class="habit-meta">
+            <span class="habit-name">Water Intake</span>
+            <span class="habit-target">Target: 4 litres</span>
+          </div>
+          <div class="habit-status" id="status-water">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill water-color" id="bar-water" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-water">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('water', -0.25)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-water" value="0" min="0" max="6" step="0.25"
+              oninput="updateHabit('water', this.value)" placeholder="0" />
+            <span class="habit-unit">litres</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('water', 0.25)">+</button>
+        </div>
+      </div>
+
+      <!-- Sleep -->
+      <div class="habit-card glass-card" id="card-sleep">
+        <div class="habit-header">
+          <div class="habit-icon-wrap sleep">😴</div>
+          <div class="habit-meta">
+            <span class="habit-name">Sleep</span>
+            <span class="habit-target">Target: 7–8 hours</span>
+          </div>
+          <div class="habit-status" id="status-sleep">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill sleep-color" id="bar-sleep" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-sleep">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('sleep', -0.5)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-sleep" value="0" min="0" max="10" step="0.5"
+              oninput="updateHabit('sleep', this.value)" placeholder="0" />
+            <span class="habit-unit">hrs</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('sleep', 0.5)">+</button>
+        </div>
+      </div>
+
+      <!-- Calories -->
+      <div class="habit-card glass-card" id="card-calories">
+        <div class="habit-header">
+          <div class="habit-icon-wrap calories">🔥</div>
+          <div class="habit-meta">
+            <span class="habit-name">Calories</span>
+            <span class="habit-target">Target: 1400–1800 kcal</span>
+          </div>
+          <div class="habit-status" id="status-calories">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill calories-color" id="bar-calories" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-calories">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('calories', -100)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-calories" value="0" min="0" max="5000"
+              oninput="updateHabit('calories', this.value)" placeholder="0" />
+            <span class="habit-unit">kcal</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('calories', 100)">+</button>
+        </div>
+        <div class="habit-warning" id="warn-calories" style="display:none"></div>
+      </div>
+
+      <!-- Protein -->
+      <div class="habit-card glass-card" id="card-protein">
+        <div class="habit-header">
+          <div class="habit-icon-wrap protein">🥩</div>
+          <div class="habit-meta">
+            <span class="habit-name">Protein</span>
+            <span class="habit-target">Target: 90g</span>
+          </div>
+          <div class="habit-status" id="status-protein">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill protein-color" id="bar-protein" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-protein">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('protein', -5)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-protein" value="0" min="0" max="300"
+              oninput="updateHabit('protein', this.value)" placeholder="0" />
+            <span class="habit-unit">grams</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('protein', 5)">+</button>
+        </div>
+        <div class="habit-warning" id="warn-protein" style="display:none"></div>
+      </div>
+
+    </div><!-- /essential-habits -->
+
+    <!-- ── FIRST PRIORITY HABITS ── -->
+    <div class="section-header">
+      <h2>🟠 First Priority Habits <span class="weight-tag">35% weight</span></h2>
+    </div>
+
+    <div class="toggles-grid" id="priority-habits">
+
+      <div class="toggle-card glass-card" id="card-smoking">
+        <div class="toggle-icon">🚭</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">No Smoking</span>
+          <span class="toggle-sub">Stay smoke-free all day</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-smoking" onchange="updateToggle('smoking', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-card glass-card" id="card-drinking">
+        <div class="toggle-icon">🚫🍺</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">No Drinking</span>
+          <span class="toggle-sub">Alcohol-free day</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-drinking" onchange="updateToggle('drinking', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-card glass-card" id="card-onlywater">
+        <div class="toggle-icon">🥤</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">Only Water</span>
+          <span class="toggle-sub">Water only during the day</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-onlywater" onchange="updateToggle('onlywater', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-card glass-card" id="card-sugar">
+        <div class="toggle-icon">🍬</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">No Sugar</span>
+          <span class="toggle-sub">Zero refined sugar</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-sugar" onchange="updateToggle('sugar', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-card glass-card" id="card-junk">
+        <div class="toggle-icon">🚫🍔</div>
+        <div class="toggle-meta">
+          <span class="toggle-name">No Junk Food</span>
+          <span class="toggle-sub">Clean eating only</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="input-junk" onchange="updateToggle('junk', this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+    </div><!-- /priority-habits -->
+
+    <!-- ── SECOND PRIORITY HABITS ── -->
+    <div class="section-header">
+      <h2>🟡 Second Priority Habits <span class="weight-tag">15% weight</span></h2>
+    </div>
+
+    <div class="habits-grid" id="secondary-habits">
+
+      <!-- Study -->
+      <div class="habit-card glass-card" id="card-study">
+        <div class="habit-header">
+          <div class="habit-icon-wrap study">📚</div>
+          <div class="habit-meta">
+            <span class="habit-name">Study</span>
+            <span class="habit-target">Target: 1.5 hours</span>
+          </div>
+          <div class="habit-status" id="status-study">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill study-color" id="bar-study" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-study">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('study', -0.25)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-study" value="0" min="0" max="12" step="0.25"
+              oninput="updateHabit('study', this.value)" placeholder="0" />
+            <span class="habit-unit">hrs</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('study', 0.25)">+</button>
+        </div>
+      </div>
+
+      <!-- Reading -->
+      <div class="habit-card glass-card" id="card-reading">
+        <div class="habit-header">
+          <div class="habit-icon-wrap reading">📖</div>
+          <div class="habit-meta">
+            <span class="habit-name">Reading</span>
+            <span class="habit-target">Target: 2 pages</span>
+          </div>
+          <div class="habit-status" id="status-reading">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill reading-color" id="bar-reading" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-reading">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('reading', -1)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-reading" value="0" min="0" max="200"
+              oninput="updateHabit('reading', this.value)" placeholder="0" />
+            <span class="habit-unit">pages</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('reading', 1)">+</button>
+        </div>
+      </div>
+
+      <!-- Breathing -->
+      <div class="habit-card glass-card" id="card-breathing">
+        <div class="habit-header">
+          <div class="habit-icon-wrap breathing">🧘</div>
+          <div class="habit-meta">
+            <span class="habit-name">Breathing Exercise</span>
+            <span class="habit-target">Target: 5 min</span>
+          </div>
+          <div class="habit-status" id="status-breathing">○</div>
+        </div>
+        <div class="habit-progress">
+          <div class="habit-bar-track">
+            <div class="habit-bar-fill breathing-color" id="bar-breathing" style="width:0%"></div>
+          </div>
+          <span class="habit-pct" id="pct-breathing">0%</span>
+        </div>
+        <div class="habit-input-row">
+          <button class="qty-btn" onclick="adjustHabit('breathing', -1)">−</button>
+          <div class="habit-input-wrap">
+            <input type="number" class="habit-input" id="input-breathing" value="0" min="0" max="60"
+              oninput="updateHabit('breathing', this.value)" placeholder="0" />
+            <span class="habit-unit">min</span>
+          </div>
+          <button class="qty-btn" onclick="adjustHabit('breathing', 1)">+</button>
+        </div>
+      </div>
+
+    </div><!-- /secondary-habits -->
+
+    <!-- ── DAILY SUMMARY ── -->
+    <div class="summary-section glass-card">
+      <h2 class="summary-title">📋 Daily Summary</h2>
+      <div class="summary-grid">
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-completed">0/14</span>
+          <span class="stat-label">Habits Done</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-pct">0%</span>
+          <span class="stat-label">Completion</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-streak">0</span>
+          <span class="stat-label">Current Streak</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-best">0</span>
+          <span class="stat-label">Best Streak</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-score">0</span>
+          <span class="stat-label">Daily Score</span>
+        </div>
+        <div class="summary-stat">
+          <span class="stat-value" id="sum-consistency">0%</span>
+          <span class="stat-label">7-day Avg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ACHIEVEMENTS ── -->
+    <div class="section-header">
+      <h2>🏆 Achievements</h2>
+    </div>
+    <div class="badges-grid" id="badges-grid">
+      <!-- Populated by JS -->
+    </div>
+
+  </section><!-- /view-today -->
+
+  <!-- ══════════════════════════════════════
+       VIEW: ANALYTICS
+  ══════════════════════════════════════ -->
+  <section class="view" id="view-analytics">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Analytics</h1>
+        <p class="page-date">Performance insights & trends</p>
+      </div>
+      <div class="analytics-period">
+        <button class="period-btn active" onclick="setPeriod('week', this)">7 Days</button>
+        <button class="period-btn" onclick="setPeriod('month', this)">30 Days</button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">📈</span>
+        <span class="kpi-value" id="kpi-avg-score">—</span>
+        <span class="kpi-label">Avg Daily Score</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">🔥</span>
+        <span class="kpi-value" id="kpi-streak">0</span>
+        <span class="kpi-label">Current Streak</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">🏅</span>
+        <span class="kpi-value" id="kpi-best-streak">0</span>
+        <span class="kpi-label">Best Streak</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">✅</span>
+        <span class="kpi-value" id="kpi-completion">—</span>
+        <span class="kpi-label">Avg Completion</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">⭐</span>
+        <span class="kpi-value" id="kpi-best-day">—</span>
+        <span class="kpi-label">Best Day Score</span>
+      </div>
+      <div class="kpi-card glass-card">
+        <span class="kpi-icon">📅</span>
+        <span class="kpi-value" id="kpi-days-logged">0</span>
+        <span class="kpi-label">Days Logged</span>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="charts-row">
+      <div class="chart-card glass-card chart-wide">
+        <h3 class="chart-title">📉 Daily Score Trend</h3>
+        <canvas id="chart-trend" height="120"></canvas>
+      </div>
+      <div class="chart-card glass-card">
+        <h3 class="chart-title">🍩 Habit Category Mix</h3>
+        <canvas id="chart-donut" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="charts-row">
+      <div class="chart-card glass-card">
+        <h3 class="chart-title">🕸️ Habit Radar</h3>
+        <canvas id="chart-radar" height="220"></canvas>
+      </div>
+      <div class="chart-card glass-card chart-wide">
+        <h3 class="chart-title">🔥 Consistency Heatmap (Last 30 Days)</h3>
+        <div id="heatmap-container" class="heatmap-container"></div>
+      </div>
+    </div>
+
+    <!-- Charts Row 3 -->
+    <div class="charts-row">
+      <div class="chart-card glass-card chart-full">
+        <h3 class="chart-title">📊 Individual Habit Completion (%)</h3>
+        <canvas id="chart-habits-bar" height="100"></canvas>
+      </div>
+    </div>
+
+  </section><!-- /view-analytics -->
+
+  <!-- ══════════════════════════════════════
+       VIEW: SETTINGS
+  ══════════════════════════════════════ -->
+  <section class="view" id="view-settings">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-date">Configure your tracker</p>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+
+      <div class="settings-card glass-card">
+        <h3>🔗 Google Sheets Integration</h3>
+        <p class="settings-desc">Paste your Google Apps Script Web App URL below to enable automatic data sync.</p>
+        <div class="settings-field">
+          <label>Apps Script Web App URL</label>
+          <input type="url" id="sheets-url" class="settings-input" placeholder="https://script.google.com/macros/s/..." />
+        </div>
+        <div class="settings-field">
+          <label>Google Sheet ID (for reference)</label>
+          <input type="text" id="sheet-id" class="settings-input" placeholder="1BxiMVs0XRA..." />
+        </div>
+        <button class="btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        <button class="btn-secondary" onclick="testConnection()">🧪 Test Connection</button>
+        <div id="connection-status" class="connection-status"></div>
+      </div>
+
+      <div class="settings-card glass-card">
+        <h3>👤 Profile</h3>
+        <div class="settings-field">
+          <label>Your Name</label>
+          <input type="text" id="user-name" class="settings-input" placeholder="Sathiya" value="Sathiya" />
+        </div>
+        <div class="settings-field">
+          <label>Daily Start Time</label>
+          <input type="time" id="start-time" class="settings-input" value="06:00" />
+        </div>
+        <button class="btn-primary" onclick="saveProfile()">💾 Save Profile</button>
+      </div>
+
+      <div class="settings-card glass-card">
+        <h3>📤 Data Management</h3>
+        <p class="settings-desc">Export your local history or clear cached data.</p>
+        <button class="btn-secondary" onclick="exportData()">📥 Export JSON</button>
+        <button class="btn-danger" onclick="clearHistory()">🗑️ Clear History</button>
+      </div>
+
+      <div class="settings-card glass-card">
+        <h3>ℹ️ Setup Instructions</h3>
+        <ol class="setup-steps">
+          <li>Open <strong>Google Sheets</strong> and create a new blank sheet.</li>
+          <li>Go to <strong>Extensions → Apps Script</strong>.</li>
+          <li>Replace the default code with the contents of <code>Code.gs</code>.</li>
+          <li>Click <strong>Deploy → New deployment → Web app</strong>.</li>
+          <li>Set <em>Execute as</em>: Me. Set <em>Who has access</em>: Anyone.</li>
+          <li>Copy the Web App URL and paste it above.</li>
+          <li>Click <strong>Test Connection</strong> to verify.</li>
+        </ol>
+      </div>
+
+    </div>
+  </section><!-- /view-settings -->
+
+</main><!-- /main-content -->
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast"></div>
+
+<!-- SUBMIT MODAL / OVERLAY -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+  <div class="modal-card glass-card" onclick="event.stopPropagation()">
+    <h2 id="modal-title">Day Saved ✅</h2>
+    <p id="modal-body"></p>
+    <button class="btn-primary" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   HABITOS — CORE APPLICATION LOGIC v3
+   Date Navigation · 6am Rule · Sheets · Warnings
+════════════════════════════════════════════════ */
+
+'use strict';
+
+/* ── DOM HELPERS ── */
+const el = id => document.getElementById(id);
+
+function showFetchStatus(show, msg) {
+  const fs = el('fetch-status');
+  const ft = el('fetch-status-text');
+  if (fs) fs.style.display = show ? 'flex' : 'none';
+  if (ft && msg) ft.textContent = msg;
+}
+
+/* ── HABIT DEFINITIONS ── */
+const HABITS = {
+  steps:     { name:'Walking',              unit:'steps', target:10000, weight:8.34, category:'essential', min:0, max:15000, step:1000 },
+  exercise:  { name:'Exercise',             unit:'min',   target:45,    weight:8.33, category:'essential', min:0, max:120,   step:5 },
+  water:     { name:'Water Intake',         unit:'L',     target:4,     weight:8.33, category:'essential', min:0, max:6,     step:0.25 },
+  sleep:     { name:'Sleep',               unit:'hrs',   target:8,     weight:8.33, category:'essential', min:0, max:10,    step:0.5, minRange:7, maxRange:8 },
+  calories:  { name:'Calories',             unit:'kcal',  target:1700,  weight:8.33, category:'essential', min:0, max:5000,  step:100,
+               warnLow:1400, warnHigh:1800 },  // warning thresholds only (not scoring range)
+  protein:   { name:'Protein',              unit:'g',     target:90,    weight:8.34, category:'essential', min:0, max:300,   step:5, warnLow:50 },
+  smoking:   { name:'No Smoking',           unit:'bool',  target:1,     weight:7.0,  category:'priority',  toggle:true },
+  drinking:  { name:'No Drinking',          unit:'bool',  target:1,     weight:7.0,  category:'priority',  toggle:true },
+  onlywater: { name:'Only Water During Day',unit:'bool',  target:1,     weight:7.0,  category:'priority',  toggle:true },
+  sugar:     { name:'No Sugar',             unit:'bool',  target:1,     weight:7.0,  category:'priority',  toggle:true },
+  junk:      { name:'No Junk Food',         unit:'bool',  target:1,     weight:7.0,  category:'priority',  toggle:true },
+  study:     { name:'Study',               unit:'hrs',   target:1.5,   weight:5.0,  category:'secondary', min:0, max:12,  step:0.25 },
+  reading:   { name:'Reading',             unit:'pages', target:2,     weight:5.0,  category:'secondary', min:0, max:200, step:1 },
+  breathing: { name:'Breathing Exercise',  unit:'min',   target:5,     weight:5.0,  category:'secondary', min:0, max:60,  step:1 },
+};
+
+const TOTAL_HABITS = Object.keys(HABITS).length;
+
+/* ── STATE ── */
+let state = {
+  values:   {},
+  scores:   {},
+  streak:   0,
+  bestStreak: 0,
+  history:  [],
+  settings: { sheetsUrl:'', sheetId:'', userName:'Sathiya' },
+};
+
+let currentDate    = '';
+let isViewingToday = true;
+
+/* ════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  loadFromStorage();
+  loadSettings();
+  initValues();
+  currentDate    = todayKey();
+  isViewingToday = true;
+  updateDateUI();
+  loadDateData(currentDate);
+  renderBadges();
+  restoreTheme();
+  setMaxDateOnPicker();
+});
+
+/* ════════════════════════════════════════════════
+   DATE UTILITIES  (6am unlock rule)
+════════════════════════════════════════════════ */
+
+/**
+ * Returns the "effective today" key (YYYY-MM-DD).
+ * Before 6:00 AM the active day is still yesterday —
+ * the new day only unlocks at 6am.
+ */
+function todayKey() {
+  const now = new Date();
+  if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+  return dateToKey(now);
+}
+
+function dateToKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDisplayDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const tk = todayKey();
+  if (dateStr === tk) return 'Today — ' + d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  if (dateStr === dateToKey(y)) return 'Yesterday — ' + d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  return d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+function dayName(dateStr) {
+  return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(dateStr+'T12:00:00').getDay()];
+}
+
+function setMaxDateOnPicker() {
+  const picker = el('date-picker');
+  if (picker) picker.max = todayKey();
+}
+
+/* ════════════════════════════════════════════════
+   DATE NAVIGATION
+════════════════════════════════════════════════ */
+function navigateDate(offset) {
+  const d = new Date(currentDate + 'T12:00:00');
+  d.setDate(d.getDate() + offset);
+  const newKey = dateToKey(d);
+  if (newKey > todayKey()) return;
+  setCurrentDate(newKey);
+  closeCalendar();
+}
+
+function setCurrentDateFromPicker(val) {
+  if (!val || val > todayKey()) return;
+  setCurrentDate(val);
+}
+
+function goToToday() {
+  setCurrentDate(todayKey());
+  closeCalendar();
+}
+
+function setCurrentDate(date) {
+  currentDate    = date;
+  isViewingToday = (date === todayKey());
+  updateDateUI();
+  loadDateData(date);
+}
+
+function updateDateUI() {
+  const display = el('date-display-text');
+  if (display) display.textContent = formatDisplayDate(currentDate);
+
+  const picker = el('date-picker');
+  if (picker) { picker.value = currentDate; picker.max = todayKey(); }
+
+  const nextBtn = el('next-day-btn');
+  if (nextBtn) nextBtn.disabled = isViewingToday;
+
+  const todayBtn = el('today-btn');
+  if (todayBtn) todayBtn.classList.toggle('active', isViewingToday);
+
+  const badge = el('past-day-badge');
+  if (badge) badge.style.display = isViewingToday ? 'none' : 'flex';
+
+  const title = el('page-mission-title');
+  if (title) title.textContent = isViewingToday ? "Today's Mission" : "Past Day Entry";
+
+  const saveTxt = el('save-btn-text');
+  if (saveTxt) saveTxt.textContent = isViewingToday ? 'Track for the day' : 'Update Entry';
+
+  updateLockState();
+}
+
+/* ════════════════════════════════════════════════
+   7-DAY EDIT LOCK
+════════════════════════════════════════════════ */
+function isDateLocked(dateStr) {
+  const today  = new Date(todayKey() + 'T12:00:00');
+  const target = new Date(dateStr    + 'T12:00:00');
+  const diff   = Math.round((today - target) / 86400000);
+  return diff > 6; // more than 6 days ago → locked
+}
+
+function updateLockState() {
+  const locked = isDateLocked(currentDate);
+
+  // Lock banner
+  const banner = el('lock-banner');
+  if (banner) banner.style.display = locked ? 'flex' : 'none';
+
+  // Disable / enable numeric ± buttons and inputs
+  document.querySelectorAll('.qty-btn').forEach(b => { b.disabled = locked; });
+  document.querySelectorAll('.habit-input').forEach(i => { i.disabled = locked; });
+  // Disable toggle checkboxes
+  document.querySelectorAll('.toggle-switch input[type="checkbox"]').forEach(cb => { cb.disabled = locked; });
+
+  // Disable submit button
+  const submitBtn = document.querySelector('.submit-btn');
+  if (submitBtn) {
+    submitBtn.disabled = locked;
+    submitBtn.title    = locked ? 'Entries older than 7 days cannot be edited' : '';
+  }
+
+  // Add visual class to today-view
+  const view = el('view-today');
+  if (view) view.classList.toggle('date-locked', locked);
+}
+
+/* ════════════════════════════════════════════════
+   CUSTOM CALENDAR POPUP
+════════════════════════════════════════════════ */
+function toggleCalendar() {
+  const existing = el('cal-popup');
+  if (existing) { closeCalendar(); return; }
+  renderCalendar();
+}
+
+function closeCalendar() {
+  const p = el('cal-popup');
+  if (p) p.remove();
+}
+
+function renderCalendar(year, month) {
+  closeCalendar();
+  const today   = new Date(todayKey() + 'T12:00:00');
+  const selDate = new Date(currentDate + 'T12:00:00');
+  year  = (year  !== undefined) ? year  : selDate.getFullYear();
+  month = (month !== undefined) ? month : selDate.getMonth();
+
+  const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  let html = `
+    <div class="cal-header">
+      <button class="cal-nav" onclick="renderCalendar(${month===0?year-1:year},${month===0?11:month-1})">‹</button>
+      <span class="cal-month-label">${MONTHS[month]} ${year}</span>
+      <button class="cal-nav" onclick="renderCalendar(${month===11?year+1:year},${month===11?0:month+1})" ${(year===today.getFullYear()&&month>=today.getMonth())||(year>today.getFullYear())?'disabled':''}>›</button>
+    </div>
+    <div class="cal-grid">
+      <span class="cal-dow">Su</span><span class="cal-dow">Mo</span><span class="cal-dow">Tu</span><span class="cal-dow">We</span><span class="cal-dow">Th</span><span class="cal-dow">Fr</span><span class="cal-dow">Sa</span>`;
+
+  for (let i = 0; i < firstDay; i++) html += `<span></span>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dKey    = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isFuture  = dKey > todayKey();
+    const isToday   = dKey === todayKey();
+    const isSelected = dKey === currentDate;
+    const hasData   = state.history.some(r => r.date === dKey);
+    let cls = 'cal-day';
+    if (isFuture) cls += ' cal-future';
+    if (isToday)  cls += ' cal-today';
+    if (isSelected) cls += ' cal-selected';
+    if (hasData && !isFuture) cls += ' cal-has-data';
+    html += isFuture
+      ? `<span class="${cls}">${d}</span>`
+      : `<span class="${cls}" onclick="setCurrentDate('${dKey}');closeCalendar()">${d}</span>`;
+  }
+  html += `</div>
+    <button class="cal-today-btn" onclick="goToToday()">Go to Today</button>`;
+
+  const popup = document.createElement('div');
+  popup.id        = 'cal-popup';
+  popup.className = 'cal-popup glass-card';
+  popup.innerHTML = html;
+
+  // Close when clicking outside
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      if (!popup.contains(e.target) && !e.target.closest('.date-display-btn')) {
+        closeCalendar();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 10);
+
+  const wrap = document.querySelector('.date-display-wrap');
+  if (wrap) wrap.appendChild(popup);
+}
+
+/* ════════════════════════════════════════════════
+   LOAD DATE DATA
+════════════════════════════════════════════════ */
+async function loadDateData(date) {
+  const local = state.history.find(r => r.date === date);
+  if (local) { populateFromRecord(local); return; }
+
+  if (state.settings.sheetsUrl) {
+    showFetchStatus(true, 'Loading from Sheets…');
+    const rec = await fetchDateFromSheets(date);
+    showFetchStatus(false);
+    if (rec) {
+      state.history.push(rec);
+      saveToStorage();
+      populateFromRecord(rec);
+      return;
+    }
+  }
+  resetHabits();
+}
+
+function populateFromRecord(rec) {
+  resetHabits(true);
+  Object.keys(HABITS).forEach(key => {
+    const h = HABITS[key];
+    if (h.toggle) {
+      const val = (rec[key] === 'Yes' || rec[key] === true || rec[key] === 1);
+      const inp = el(`input-${key}`);
+      if (inp) { inp.checked = val; updateToggle(key, val, true); }
+    } else {
+      const val = parseFloat(rec[key]) || 0;
+      const inp = el(`input-${key}`);
+      if (inp) { inp.value = val; updateHabit(key, val, true); }
+    }
+  });
+  recalculate();
+}
+
+function resetHabits(silent = false) {
+  Object.keys(HABITS).forEach(key => {
+    const h = HABITS[key];
+    state.values[key] = 0;
+    if (h.toggle) {
+      const inp = el(`input-${key}`);
+      if (inp) inp.checked = false;
+      if (!silent) updateToggle(key, false, true);
+      el(`card-${key}`)?.classList.remove('active-toggle');
+    } else {
+      const inp = el(`input-${key}`);
+      if (inp) inp.value = 0;
+      const bar   = el(`bar-${key}`);
+      const pctEl = el(`pct-${key}`);
+      if (bar)   bar.style.width = '0%';
+      if (pctEl) pctEl.textContent = '0%';
+      const statusEl = el(`status-${key}`);
+      if (statusEl) { statusEl.textContent = '○'; statusEl.classList.remove('done'); }
+      el(`card-${key}`)?.classList.remove('completed');
+    }
+    // clear warnings on reset
+    const warn = el(`warn-${key}`);
+    if (warn) warn.style.display = 'none';
+    el(`card-${key}`)?.classList.remove('warn-card');
+  });
+  if (!silent) recalculate();
+}
+
+/* ════════════════════════════════════════════════
+   SHEETS — READ
+════════════════════════════════════════════════ */
+async function fetchDateFromSheets(date) {
+  const url = buildGetUrl(state.settings.sheetsUrl, { action:'getDate', date });
+  try {
+    const resp = await fetch(url, { redirect:'follow' });
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    if (json.status === 'ok' && json.record) return json.record;
+  } catch(e) { console.warn('Sheets fetch error:', e); }
+  return null;
+}
+
+async function fetchAllHistoryFromSheets() {
+  if (!state.settings.sheetsUrl) return null;
+  const url = buildGetUrl(state.settings.sheetsUrl, { action:'getData' });
+  try {
+    const resp = await fetch(url, { redirect:'follow' });
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    if (json.status === 'ok' && Array.isArray(json.records)) {
+      json.records.forEach(rec => {
+        if (!rec.date) return;
+        const idx = state.history.findIndex(r => r.date === rec.date);
+        if (idx >= 0) state.history[idx] = { ...state.history[idx], ...rec };
+        else          state.history.push(rec);
+      });
+      state.history.sort((a,b) => a.date.localeCompare(b.date));
+      saveToStorage();
+      recalcStreak();
+      return json.records;
+    }
+  } catch(e) { console.warn('Sheets getData error:', e); }
+  return null;
+}
+
+function buildGetUrl(base, params) {
+  const url = new URL(base);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  return url.toString();
+}
+
+/* ════════════════════════════════════════════════
+   STORAGE
+════════════════════════════════════════════════ */
+function loadFromStorage() {
+  try {
+    const saved   = localStorage.getItem('habitos_history');
+    if (saved)   state.history = JSON.parse(saved);
+    const streaks = localStorage.getItem('habitos_streaks');
+    if (streaks) { const s = JSON.parse(streaks); state.streak = s.streak||0; state.bestStreak = s.bestStreak||0; }
+  } catch(e) { console.warn('Storage load:', e); }
+}
+
+function saveToStorage() {
+  localStorage.setItem('habitos_history', JSON.stringify(state.history));
+  localStorage.setItem('habitos_streaks', JSON.stringify({ streak:state.streak, bestStreak:state.bestStreak }));
+}
+
+function loadSettings() {
+  const s = localStorage.getItem('habitos_settings');
+  if (s) state.settings = { ...state.settings, ...JSON.parse(s) };
+  if (state.settings.sheetsUrl) { const e = el('sheets-url'); if(e) e.value = state.settings.sheetsUrl; }
+  if (state.settings.sheetId)   { const e = el('sheet-id');   if(e) e.value = state.settings.sheetId; }
+  if (state.settings.userName)  { const e = el('user-name');  if(e) e.value = state.settings.userName; }
+}
+
+/* ════════════════════════════════════════════════
+   HABITS — UPDATE
+════════════════════════════════════════════════ */
+function initValues() {
+  Object.keys(HABITS).forEach(key => { state.values[key] = 0; });
+}
+
+function updateHabit(key, rawVal, silent = false) {
+  const h   = HABITS[key];
+  let val   = parseFloat(rawVal) || 0;
+  val       = Math.max(h.min||0, Math.min(h.max||99999, val));
+  state.values[key] = val;
+
+  const input = el(`input-${key}`);
+  if (input && !silent) input.value = val;
+
+  const pct   = Math.min(100, Math.round(habitScore(key, val) * 100));
+  const bar   = el(`bar-${key}`);
+  const pctEl = el(`pct-${key}`);
+  if (bar)   bar.style.width   = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+
+  const statusEl = el(`status-${key}`);
+  const card     = el(`card-${key}`);
+  if (statusEl) {
+    if (pct >= 100) { statusEl.textContent = '✅'; statusEl.classList.add('done'); card?.classList.add('completed'); }
+    else            { statusEl.textContent = '○';  statusEl.classList.remove('done'); card?.classList.remove('completed'); }
+  }
+
+  /* ── Calorie warning ── */
+  if (key === 'calories' && val > 0) {
+    const warn = el('warn-calories');
+    if (val < 1400) {
+      if (warn) { warn.textContent = '⚠️ Too low! Eat more nutritious food — your body needs fuel.'; warn.style.display = 'block'; }
+      card?.classList.add('warn-card');
+    } else if (val > 1800) {
+      if (warn) { warn.textContent = '⚠️ Over limit! Plan more activity tomorrow or reduce intake.'; warn.style.display = 'block'; }
+      card?.classList.add('warn-card');
+    } else {
+      if (warn) warn.style.display = 'none';
+      card?.classList.remove('warn-card');
+    }
+  } else if (key === 'calories') {
+    const warn = el('warn-calories');
+    if (warn) warn.style.display = 'none';
+    card?.classList.remove('warn-card');
+  }
+
+  /* ── Protein warning ── */
+  if (key === 'protein' && val > 0 && val < 50) {
+    const warn = el('warn-protein');
+    if (warn) { warn.textContent = '💪 Low protein! Add more protein in your next meal.'; warn.style.display = 'block'; }
+    card?.classList.add('warn-card');
+  } else if (key === 'protein') {
+    const warn = el('warn-protein');
+    if (warn) warn.style.display = 'none';
+    card?.classList.remove('warn-card');
+  }
+
+  if (!silent) recalculate();
+}
+
+function updateToggle(key, checked, silent = false) {
+  state.values[key] = checked ? 1 : 0;
+  el(`card-${key}`)?.classList.toggle('active-toggle', checked);
+  if (!silent) recalculate();
+}
+
+function adjustHabit(key, delta) {
+  if (isDateLocked(currentDate)) return;
+  const h    = HABITS[key];
+  const inp  = el(`input-${key}`);
+  const curr = parseFloat(inp?.value) || 0;
+  const next = Math.max(h.min||0, Math.min(h.max||99999, +(curr + delta).toFixed(4)));
+  if (inp) inp.value = next;
+  updateHabit(key, next);
+}
+
+/* ════════════════════════════════════════════════
+   SCORING
+════════════════════════════════════════════════ */
+function habitScore(key, val) {
+  const h = HABITS[key];
+  if (h.toggle) return val >= 1 ? 1 : 0;
+  /* sleep: scored in range 7–8h */
+  if (h.minRange && h.maxRange) {
+    if (val >= h.minRange && val <= h.maxRange) return 1;
+    if (val < h.minRange) return val / h.minRange;
+    return Math.max(0, 1 - (val - h.maxRange) / h.maxRange * 0.5);
+  }
+  /* calories: full score 1400–1800 (green tick), partial below, slight penalty above */
+  if (key === 'calories') {
+    if (val >= 1400 && val <= 1800) return 1;
+    if (val > 0 && val < 1400) return val / 1400;
+    if (val > 1800) return Math.max(0, 1 - (val - 1800) / 3600);
+    return 0;
+  }
+  return Math.min(1, val / h.target);
+}
+
+function recalculate() {
+  let daily = 0, completed = 0;
+  Object.keys(HABITS).forEach(key => {
+    const s = habitScore(key, state.values[key]);
+    daily  += s * HABITS[key].weight;
+    if (s >= 1) completed++;
+  });
+  daily = Math.round(Math.min(100, daily));
+
+  const health = calcSubScore(['steps','exercise','water','sleep','calories','protein']);
+  const prod   = calcSubScore(['study','reading','breathing']);
+  const disc   = calcSubScore(['smoking','drinking','onlywater','sugar','junk']);
+
+  state.scores = { daily, health, productivity:prod, discipline:disc };
+  const pct = Math.round((completed / TOTAL_HABITS) * 100);
+
+  updateUI(daily, health, prod, disc, pct, completed);
+  updateMotivation(pct);
+  updateStreakDisplay();
+  updateSummary(completed, pct);
+  updateLevel(daily);
+}
+
+function calcSubScore(keys) {
+  let tw = 0, ach = 0;
+  keys.forEach(k => { tw += HABITS[k].weight; ach += habitScore(k, state.values[k]) * HABITS[k].weight; });
+  return tw ? Math.round((ach/tw)*100) : 0;
+}
+
+/* ── Ring charts (Canvas 2D) — clean dot-cap style, no neon spread ── */
+function drawRing(canvasId, score, c1, c2, size=100) {
+  const canvas = el(canvasId); if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width  = size + 'px';
+  canvas.style.height = size + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const cx = size / 2, cy = size / 2;
+  const r  = size * 0.38, lw = size * 0.1;
+  const start = -Math.PI / 2;
+  const sweep = Math.max((score / 100) * 2 * Math.PI, 0.001);
+  const end   = start + sweep;
+
+  // Track background
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = lw; ctx.lineCap = 'butt'; ctx.stroke();
+
+  // Gradient arc
+  const g = ctx.createLinearGradient(0, 0, size, size);
+  g.addColorStop(0, c1); g.addColorStop(1, c2);
+  ctx.beginPath(); ctx.arc(cx, cy, r, start, end);
+  ctx.strokeStyle = g; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke();
+
+  // Start-cap dot (clean circle at 12 o'clock)
+  ctx.beginPath();
+  ctx.arc(cx, cy - r, lw * 0.42, 0, 2 * Math.PI);
+  ctx.fillStyle = c1; ctx.fill();
+
+  // End-cap glow dot (sharp, no blur)
+  if (score > 2) {
+    const ex = cx + r * Math.cos(end);
+    const ey = cy + r * Math.sin(end);
+    ctx.beginPath(); ctx.arc(ex, ey, lw * 0.42, 0, 2 * Math.PI);
+    ctx.fillStyle = c2; ctx.fill();
+  }
+}
+
+function updateUI(daily, health, prod, disc, pct, completed) {
+  drawRing('ring-daily',        daily,  '#6366f1','#22d3ee',100);
+  drawRing('ring-health',       health, '#10b981','#34d399',80);
+  drawRing('ring-productivity', prod,   '#eab308','#facc15',80);
+  drawRing('ring-discipline',   disc,   '#ec4899','#f472b6',80);
+  setText('score-daily',        daily);
+  setText('score-health',       health);
+  setText('score-productivity', prod);
+  setText('score-discipline',   disc);
+  setText('grade-daily',        getGrade(daily));
+  setText('completion-pct',     pct + '%');
+  setText('sum-completed',      `${completed}/${TOTAL_HABITS}`);
+  setText('sum-pct',            pct + '%');
+  setText('sum-score',          daily);
+  const bar = el('main-progress-bar');
+  if (bar) bar.style.width = pct + '%';
+}
+
+function getGrade(s) {
+  if (s >= 90) return '⭐ Elite';
+  if (s >= 75) return '🔥 Excellent';
+  if (s >= 60) return '👍 Good';
+  return '📈 Improving';
+}
+
+/* ════════════════════════════════════════════════
+   MOTIVATION ENGINE
+════════════════════════════════════════════════ */
+const MESSAGES = {
+  elite:     ["Outstanding! You crushed every goal today. This is how legends are built.","100% complete. You didn't just meet the bar — you raised it. Keep building the life you deserve.","Perfect execution. Your discipline today is the compound interest of your future self.","Elite performance unlocked. This is who you're becoming, one perfect day at a time."],
+  excellent: ["Excellent work! You're extremely close to a perfect day — the consistency is building momentum.","Almost there! 80%+ completion means you're operating well above average. That's real discipline.","Strong performance. These habits are reshaping your biology and mindset simultaneously.","So close to the peak. Tomorrow, push that last 20% — you clearly have the capability."],
+  good:      ["Good progress. Small improvements today create massive results over 90 days. Keep stacking wins.","You're halfway through the mission. Recommit to the remaining habits — they matter more than you think.","50% done is 50% better than zero. Finish the day strong and lock in that momentum.","Solid foundation. Build on it. Every habit you complete today rewires your default future."],
+  low:       ["Every great transformation starts with one brave step. Today is still winnable — start now.","Progress is progress. Even a small win today keeps the streak alive and the identity intact.","Your future self is watching. Give them something to be proud of before midnight.","Rough day? That's okay. The only real failure is not starting. Pick one habit and go."],
+};
+
+function updateMotivation(pct) {
+  const pool = pct>=90 ? MESSAGES.elite : pct>=70 ? MESSAGES.excellent : pct>=40 ? MESSAGES.good : MESSAGES.low;
+  const msg  = pool[Math.floor(Math.random()*pool.length)];
+  setText('motivation-text', `"${msg}"`);
+  const card = el('motivation-card');
+  if (card) card.style.borderLeftColor = pct>=90?'var(--green)':pct>=70?'var(--accent)':pct>=40?'var(--yellow)':'var(--red)';
+}
+
+/* ════════════════════════════════════════════════
+   STREAKS
+════════════════════════════════════════════════ */
+function updateStreakDisplay() {
+  setText('current-streak',       state.streak);
+  setText('sidebar-streak-count', state.streak);
+  setText('sum-streak',           state.streak);
+  setText('sum-best',             state.bestStreak);
+}
+
+function recalcStreak() {
+  if (!state.history.length) { state.streak = 0; return; }
+  const sorted = [...state.history].sort((a,b) => b.date.localeCompare(a.date));
+  let streak = 0;
+  const expected = new Date();
+  for (const rec of sorted) {
+    const d    = new Date(rec.date+'T12:00:00');
+    const diff = Math.round((expected - d) / 86400000);
+    if (diff <= 1 && (rec.completionPct||0) >= 50) { streak++; expected.setTime(d.getTime()); }
+    else break;
+  }
+  state.streak     = streak;
+  state.bestStreak = Math.max(state.bestStreak, streak);
+}
+
+function sevenDayAvg() {
+  const recent = [...state.history].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7);
+  if (!recent.length) return 0;
+  return Math.round(recent.reduce((s,r)=>s+(r.completionPct||0),0)/recent.length);
+}
+
+function updateSummary(completed, pct) {
+  setText('sum-consistency', sevenDayAvg()+'%');
+}
+
+/* ════════════════════════════════════════════════
+   LEVELS & BADGES
+════════════════════════════════════════════════ */
+const LEVELS = [
+  { name:'Beginner',        icon:'🌱', threshold:0    },
+  { name:'Disciplined',     icon:'⚡', threshold:50   },
+  { name:'Focused',         icon:'🎯', threshold:200  },
+  { name:'Consistent',      icon:'🔥', threshold:500  },
+  { name:'Elite Performer', icon:'👑', threshold:1000 },
+];
+
+function updateLevel(score) {
+  const total = state.history.reduce((s,r)=>s+(r.dailyScore||0),0)+score;
+  const level = [...LEVELS].reverse().find(l=>total>=l.threshold)||LEVELS[0];
+  setText('level-name', level.name);
+  const icon = el('level-badge')?.querySelector('.level-icon');
+  if (icon) icon.textContent = level.icon;
+}
+
+const BADGE_DEFS = [
+  { id:'streak7',   icon:'🔥', name:'7-Day Streak',        check:()=>state.bestStreak>=7 },
+  { id:'streak30',  icon:'💎', name:'30-Day Streak',        check:()=>state.bestStreak>=30 },
+  { id:'nosmoke',   icon:'🚭', name:'No Smoking Champion',  check:()=>state.history.filter(r=>r.smoking==='Yes').length>=7 },
+  { id:'fitness',   icon:'💪', name:'Fitness Warrior',      check:()=>state.history.filter(r=>parseFloat(r.exercise)>=45).length>=7 },
+  { id:'hydration', icon:'💧', name:'Hydration Master',     check:()=>state.history.filter(r=>parseFloat(r.water)>=4).length>=7 },
+  { id:'reading',   icon:'📖', name:'Reading Consistency',  check:()=>state.history.filter(r=>parseFloat(r.reading)>=2).length>=14 },
+  { id:'study',     icon:'🧠', name:'Study Beast',          check:()=>state.history.filter(r=>parseFloat(r.study)>=1.5).length>=14 },
+  { id:'perfect',   icon:'⭐', name:'Perfect Day',          check:()=>state.history.some(r=>(r.completionPct||0)>=100) },
+];
+
+function renderBadges() {
+  const grid = el('badges-grid'); if (!grid) return;
+  grid.innerHTML = BADGE_DEFS.map(b => {
+    const earned = b.check();
+    return `<div class="badge ${earned?'earned':'locked'}" title="${b.name}"><span class="badge-icon">${b.icon}</span><span>${b.name}</span></div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════════
+   SUBMIT DAY
+════════════════════════════════════════════════ */
+async function submitDay() {
+  if (isDateLocked(currentDate)) return;
+  const scores = state.scores;
+  const pct    = parseInt(el('completion-pct')?.textContent)||0;
+  const msg    = (el('motivation-text')?.textContent||'').replace(/^"|"$/g,'');
+
+  const record = {
+    date: currentDate, day: dayName(currentDate),
+    steps:    state.values.steps,    exercise: state.values.exercise,
+    water:    state.values.water,    sleep:    state.values.sleep,
+    calories: state.values.calories, protein:  state.values.protein,
+    smoking:  state.values.smoking  ?'Yes':'No',
+    drinking: state.values.drinking ?'Yes':'No',
+    onlywater:state.values.onlywater?'Yes':'No',
+    sugar:    state.values.sugar    ?'Yes':'No',
+    junk:     state.values.junk     ?'Yes':'No',
+    study: state.values.study, reading: state.values.reading, breathing: state.values.breathing,
+    dailyScore: scores.daily, healthScore: scores.health,
+    productivityScore: scores.productivity, disciplineScore: scores.discipline,
+    completionPct: pct, streak: state.streak, motivationalMessage: msg,
+  };
+
+  const idx = state.history.findIndex(r => r.date === currentDate);
+  if (idx >= 0) state.history[idx] = record;
+  else          state.history.push(record);
+  state.history.sort((a,b)=>a.date.localeCompare(b.date));
+
+  recalcStreak(); saveToStorage(); renderBadges(); updateStreakDisplay();
+
+  if (state.settings.sheetsUrl) {
+    showFetchStatus(true,'Saving to Sheets…');
+    postToSheets(state.settings.sheetsUrl, record).then(ok => {
+      showFetchStatus(false);
+      if (ok) showToast('✅ Saved to Google Sheets!','success');
+      else    showToast('⚠️ Saved locally. Sheets sync failed.','error');
+    });
+  } else {
+    showToast('✅ Saved locally. Add Sheets URL in Settings to sync.','success');
+  }
+
+  el('modal-title').textContent = !isViewingToday ? 'Past Day Updated 📅' : `Day Saved ${pct>=90?'🏆':pct>=70?'✅':'💾'}`;
+  el('modal-body').innerHTML = `<strong>Date:</strong> ${formatDisplayDate(currentDate)}<br/><strong>Daily Score:</strong> ${scores.daily} &nbsp;|&nbsp; <strong>Completion:</strong> ${pct}%<br/><strong>Streak:</strong> 🔥 ${state.streak} day${state.streak!==1?'s':''}<br/><br/>${getGrade(scores.daily)}<br/><em style="font-size:13px;color:var(--text-secondary)">${msg}</em>`;
+  openModal();
+}
+
+async function postToSheets(url, data) {
+  try {
+    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    return true;
+  } catch(e) { return false; }
+}
+
+/* ════════════════════════════════════════════════
+   SETTINGS
+════════════════════════════════════════════════ */
+function saveSettings() {
+  state.settings.sheetsUrl = el('sheets-url')?.value?.trim()||'';
+  state.settings.sheetId   = el('sheet-id')?.value?.trim()||'';
+  localStorage.setItem('habitos_settings',JSON.stringify(state.settings));
+  showToast('✅ Settings saved!','success');
+}
+function saveProfile() {
+  state.settings.userName = el('user-name')?.value?.trim()||'Sathiya';
+  localStorage.setItem('habitos_settings',JSON.stringify(state.settings));
+  showToast('✅ Profile saved!','success');
+}
+async function testConnection() {
+  const url = el('sheets-url')?.value?.trim();
+  const s   = el('connection-status');
+  if (!url) { s.textContent='⚠️ Please enter a URL first.'; s.className='connection-status err'; return; }
+  s.textContent='🔄 Testing…'; s.className='connection-status';
+  try {
+    await fetch(url,{method:'POST',mode:'no-cors',body:JSON.stringify({test:true})});
+    s.textContent='✅ Connection looks good!'; s.className='connection-status ok';
+  } catch(e) { s.textContent='❌ Could not reach URL. Check Apps Script deployment.'; s.className='connection-status err'; }
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify({history:state.history,streak:state.streak},null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`habitos-export-${currentDate}.json`; a.click(); URL.revokeObjectURL(a.href);
+  showToast('📥 Export downloaded!','success');
+}
+function clearHistory() {
+  if (!confirm('Clear all local history?')) return;
+  state.history=[]; state.streak=0; state.bestStreak=0;
+  saveToStorage(); renderBadges(); showToast('🗑️ History cleared.','info');
+}
+
+/* ════════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════════ */
+function switchView(view, btn) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  el(`view-${view}`)?.classList.add('active');
+  btn?.classList.add('active');
+  if (view === 'analytics') initAnalytics();
+  closeSidebar();
+  closeCalendar();
+}
+
+/* ════════════════════════════════════════════════
+   THEME
+════════════════════════════════════════════════ */
+function restoreTheme() {
+  const saved = localStorage.getItem('habitos-theme') || 'dark';  document.documentElement.setAttribute('data-theme', saved);
+  const icon = saved === 'dark' ? '🌙' : '☀️';
+  const t1 = el('theme-icon');        if (t1) t1.textContent = icon;
+  const t2 = el('theme-icon-mobile'); if (t2) t2.textContent = icon;
+}
+
+function toggleTheme() {
+  const html   = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  const next   = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('habitos-theme', next);
+  const icon = isDark ? '☀️' : '🌙';
+  const t1 = el('theme-icon');        if (t1) t1.textContent = icon;
+  const t2 = el('theme-icon-mobile'); if (t2) t2.textContent = icon;
+}
+
+/* ════════════════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════════════════ */
+function toggleSidebar() { el('sidebar')?.classList.toggle('open'); }
+function closeSidebar()  { el('sidebar')?.classList.remove('open'); }
+
+/* ════════════════════════════════════════════════
+   TOAST & MODAL
+════════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, type='info') {
+  const t = el('toast'); if (!t) return;
+  t.textContent = msg;
+  t.className   = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3400);
+}
+function openModal()  { el('modal-overlay')?.classList.add('open'); }
+function closeModal() { el('modal-overlay')?.classList.remove('open'); }
+
+</script>
+<script>
+/* ════════════════════════════════════════════════
+   HABITOS — ANALYTICS ENGINE v2
+   Async Sheets fetch · Merged history · Charts
+════════════════════════════════════════════════ */
+
+'use strict';
+
+Chart.defaults.color       = '#8b8fa8';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+Chart.defaults.plugins.legend.labels.padding  = 16;
+
+const charts = {};
+let _analyticsLoading = false;
+
+/* ── Entry point ── */
+async function initAnalytics() {
+  if (_analyticsLoading) return;
+  _analyticsLoading = true;
+
+  injectSyncBanner();
+  setSyncBannerState('loading');
+
+  // Try to pull latest data from Sheets first
+  let sheetsRecords = null;
+  if (state.settings && state.settings.sheetsUrl) {
+    try {
+      sheetsRecords = await fetchAllHistoryFromSheets();
+    } catch(e) { /* non-fatal */ }
+  }
+
+  if (sheetsRecords && sheetsRecords.length) {
+    setSyncBannerState('done', sheetsRecords.length);
+  } else if (state.settings && state.settings.sheetsUrl) {
+    setSyncBannerState('local');
+  } else {
+    setSyncBannerState('nosheetsurl');
+  }
+
+  const period = window._analyticsPeriod || 'week';
+  const days   = period === 'week' ? 7 : 30;
+  const data   = getAnalyticsData(days);
+
+  // Sync Chart.js colors to current theme
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  Chart.defaults.color       = isDark ? '#8b8fa8' : '#5c6080';
+  Chart.defaults.borderColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+
+  updateKPICards(data);
+  renderTrendChart(data);
+  renderDonutChart(data);
+  renderRadarChart(data);
+  renderHeatmap(data.allRecords);
+  renderHabitsBar(data.allRecords);
+
+  _analyticsLoading = false;
+}
+
+/* ── Sync Banner ── */
+function injectSyncBanner() {
+  if (el('analytics-sync-banner')) return;
+  const view = el('view-analytics');
+  if (!view) return;
+  const kpiRow = view.querySelector('.kpi-row');
+  if (!kpiRow) return;
+
+  const banner = document.createElement('div');
+  banner.id        = 'analytics-sync-banner';
+  banner.className = 'analytics-sync-banner';
+  banner.innerHTML = `
+    <div class="sync-info" id="sync-info-text">Checking for data…</div>
+    <button class="btn-sync" id="btn-sync-now" onclick="refreshAnalytics()">↻ Sync from Sheets</button>
+  `;
+  view.insertBefore(banner, kpiRow);
+}
+
+function setSyncBannerState(state, count) {
+  const info = el('sync-info-text');
+  const btn  = el('btn-sync-now');
+  if (!info) return;
+
+  if (state === 'loading') {
+    info.innerHTML = '<span style="color:var(--accent)">↻ Syncing from Google Sheets…</span>';
+    if (btn) btn.disabled = true;
+  } else if (state === 'done') {
+    const total = (window.state?.history?.length) || count;
+    info.innerHTML = `<strong>${total} days</strong> loaded from Google Sheets. Charts show live data.`;
+    if (btn) btn.disabled = false;
+  } else if (state === 'local') {
+    info.innerHTML = `Showing <strong>${window.state?.history?.length||0} days</strong> from local cache. Sheets sync failed — check your URL in Settings.`;
+    if (btn) btn.disabled = false;
+  } else if (state === 'nosheetsurl') {
+    info.innerHTML = `Showing <strong>${window.state?.history?.length||0} days</strong> from local storage. <a href="#" onclick="switchView('settings',null)" style="color:var(--accent)">Add Sheets URL in Settings</a> to enable cloud sync.`;
+    if (btn) btn.disabled = false;
+  }
+}
+
+function refreshAnalytics() {
+  _analyticsLoading = false;
+  initAnalytics();
+}
+
+/* ── Prepare Analytics Data ── */
+function getAnalyticsData(days) {
+  const sorted = [...(state.history||[])].sort((a,b)=>a.date.localeCompare(b.date));
+  const recent = sorted.slice(-days);
+
+  const scores   = recent.map(r=>r.dailyScore||0);
+  const health   = recent.map(r=>r.healthScore||0);
+  const prod     = recent.map(r=>r.productivityScore||0);
+  const disc     = recent.map(r=>r.disciplineScore||0);
+  const pctArr   = recent.map(r=>r.completionPct||0);
+  const labels   = recent.map(r=>fmtLabel(r.date));
+
+  const avgScore  = scores.length ? Math.round(scores.reduce((s,v)=>s+v,0)/scores.length) : 0;
+  const avgPct    = pctArr.length ? Math.round(pctArr.reduce((s,v)=>s+v,0)/pctArr.length) : 0;
+  const bestScore = scores.length ? Math.max(...scores) : 0;
+
+  return { labels, scores, health, prod, disc, pctArr, avgScore, avgPct, bestScore, daysLogged: sorted.length, allRecords: sorted.slice(-30) };
+}
+
+function fmtLabel(dateStr) {
+  const d = new Date(dateStr+'T12:00:00');
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+/* ── KPI Cards ── */
+function updateKPICards(data) {
+  setText('kpi-avg-score',   data.avgScore  || '—');
+  setText('kpi-streak',      state.streak   || 0);
+  setText('kpi-best-streak', state.bestStreak||0);
+  setText('kpi-completion',  data.avgPct ? data.avgPct+'%' : '—');
+  setText('kpi-best-day',    data.bestScore || '—');
+  setText('kpi-days-logged', data.daysLogged||0);
+}
+
+/* ── 1. LINE TREND ── */
+function renderTrendChart(data) {
+  destroyChart('chart-trend');
+  const ctx = el('chart-trend');
+  if (!ctx) return;
+  if (!data.scores.length) return showNoData(ctx.parentElement,'chart-trend');
+  clearNoData(ctx.parentElement);
+
+  const gradFill = ctx.getContext('2d').createLinearGradient(0,0,0,300);
+  gradFill.addColorStop(0,'rgba(99,102,241,0.3)');
+  gradFill.addColorStop(1,'rgba(99,102,241,0.01)');
+
+  charts['chart-trend'] = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: data.labels,
+      datasets:[
+        { label:'Daily Score', data:data.scores, borderColor:'#6366f1', backgroundColor:gradFill, borderWidth:2.5, tension:0.4, fill:true, pointBackgroundColor:'#6366f1', pointRadius:4, pointHoverRadius:7 },
+        { label:'Health',      data:data.health, borderColor:'#10b981', backgroundColor:'transparent', borderWidth:1.5, borderDash:[4,3], tension:0.4, pointRadius:2 },
+        { label:'Productivity',data:data.prod,   borderColor:'#eab308', backgroundColor:'transparent', borderWidth:1.5, borderDash:[4,3], tension:0.4, pointRadius:2 },
+        { label:'Discipline',  data:data.disc,   borderColor:'#ec4899', backgroundColor:'transparent', borderWidth:1.5, borderDash:[4,3], tension:0.4, pointRadius:2 },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'top',labels:{usePointStyle:true}},
+        tooltip:{backgroundColor:'rgba(13,15,23,0.95)',borderColor:'rgba(99,102,241,0.3)',borderWidth:1,padding:12,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}`}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{maxRotation:45}},
+        y:{min:0,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{callback:v=>v+'%'}}
+      }
+    }
+  });
+}
+
+/* ── 2. DOUGHNUT (Category Mix) ── */
+function renderDonutChart(data) {
+  destroyChart('chart-donut');
+  const ctx = el('chart-donut');
+  if (!ctx) return;
+  if (!data.scores.length) return showNoData(ctx.parentElement,'chart-donut');
+  clearNoData(ctx.parentElement);
+
+  // Average across recent period for each category
+  const recent   = (state.history||[]).slice(-7);
+  const essScore = avgCategory(['steps','exercise','water','sleep','calories','protein'], recent);
+  const priScore = avgCategory(['smoking','drinking','onlywater','sugar','junk'], recent);
+  const secScore = avgCategory(['study','reading','breathing'], recent);
+
+  charts['chart-donut'] = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels:['Essential (50%)','Priority (35%)','Secondary (15%)'],
+      datasets:[{data:[essScore,priScore,secScore],backgroundColor:['rgba(99,102,241,0.85)','rgba(236,72,153,0.85)','rgba(234,179,8,0.85)'],borderColor:['#6366f1','#ec4899','#eab308'],borderWidth:2,hoverOffset:8}]
+    },
+    options:{responsive:true,cutout:'68%',plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}%`}}}}
+  });
+}
+
+function avgCategory(keys, records) {
+  if (!records.length) return 0;
+  let total=0,count=0;
+  records.forEach(rec=>{
+    keys.forEach(k=>{
+      const h=HABITS[k]; if(!h) return;
+      const v=typeof rec[k]==='string'?(rec[k]==='Yes'?1:0):(parseFloat(rec[k])||0);
+      total += habitScore(k,v)*100; count++;
+    });
+  });
+  return count ? Math.round(total/count) : 0;
+}
+
+/* ── 3. RADAR ── */
+function renderRadarChart(data) {
+  destroyChart('chart-radar');
+  const ctx = el('chart-radar');
+  if (!ctx) return;
+  if (!data.scores.length) return showNoData(ctx.parentElement,'chart-radar');
+  clearNoData(ctx.parentElement);
+
+  const recent = (state.history||[]).slice(-7);
+  const avg = k => {
+    if (!recent.length) return 0;
+    return Math.round(recent.reduce((s,r)=>{ const v=typeof r[k]==='string'?(r[k]==='Yes'?1:0):(parseFloat(r[k])||0); return s+habitScore(k,v)*100; },0)/recent.length);
+  };
+
+  charts['chart-radar'] = new Chart(ctx, {
+    type:'radar',
+    data:{
+      labels:['Steps','Exercise','Water','Sleep','Calories','Protein','Study','No Smoking','No Junk'],
+      datasets:[{label:'7-Day Avg %',data:[avg('steps'),avg('exercise'),avg('water'),avg('sleep'),avg('calories'),avg('protein'),avg('study'),avg('smoking'),avg('junk')],backgroundColor:'rgba(99,102,241,0.15)',borderColor:'#6366f1',borderWidth:2,pointBackgroundColor:'#6366f1',pointRadius:4}]
+    },
+    options:{responsive:true,scales:{r:{min:0,max:100,grid:{color:'rgba(255,255,255,0.07)'},ticks:{stepSize:25,callback:v=>v+'%',font:{size:10}},pointLabels:{font:{size:11},color:'#8b8fa8'}}},plugins:{legend:{position:'top'}}}
+  });
+}
+
+/* ── 4. HEATMAP (30 days) ── */
+function renderHeatmap(records) {
+  const container = el('heatmap-container'); if (!container) return;
+  const scoreMap  = {};
+  records.forEach(r=>{ scoreMap[r.date]=r.completionPct||0; });
+
+  let html = '';
+  for (let i=29; i>=0; i--) {
+    const d   = new Date(); d.setDate(d.getDate()-i);
+    const key = d.toISOString().split('T')[0];
+    const pct = scoreMap[key]!==undefined ? scoreMap[key] : -1;
+    const lvl = pct<0?0:pct>=90?4:pct>=70?3:pct>=50?2:1;
+    const tip = pct<0?`${key}: No data`:`${key}: ${pct}%`;
+    html += `<div class="heat-cell heat-${lvl}" title="${tip}"></div>`;
+  }
+  container.innerHTML = html;
+}
+
+/* ── 5. HABITS BAR ── */
+function renderHabitsBar(records) {
+  destroyChart('chart-habits-bar');
+  const ctx = el('chart-habits-bar');
+  if (!ctx) return;
+  if (!records.length) return showNoData(ctx.parentElement,'chart-habits-bar');
+  clearNoData(ctx.parentElement);
+
+  const allKeys = ['steps','exercise','water','sleep','calories','protein','study','reading','breathing','smoking','drinking','onlywater','sugar','junk'];
+
+  const avgPcts = allKeys.map(k=>{
+    const h = HABITS[k]; if(!h) return 0;
+    const vals = records.map(r=>{
+      const v=typeof r[k]==='string'?(r[k]==='Yes'?1:0):(parseFloat(r[k])||0);
+      return habitScore(k,v)*100;
+    });
+    return Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
+  });
+
+  const COLORS=['#3b82f6','#ef4444','#06b6d4','#a855f7','#f97316','#10b981','#eab308','#ec4899','#22d3ee','#f87171','#fb923c','#67e8f9','#86efac','#fbbf24'];
+
+  charts['chart-habits-bar'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:allKeys.map(k=>HABITS[k]?.name||k),
+      datasets:[{label:'Avg Completion %',data:avgPcts,backgroundColor:COLORS.map(c=>c+'cc'),borderColor:COLORS,borderWidth:1.5,borderRadius:6}]
+    },
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.y}% completion`}}},scales:{y:{min:0,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{callback:v=>v+'%'}},x:{grid:{display:false},ticks:{maxRotation:35,font:{size:11}}}}}
+  });
+}
+
+/* ── Helpers ── */
+function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+function showNoData(parent, id) {
+  clearNoData(parent);
+  const d = document.createElement('div');
+  d.className = `no-data-notice chart-loading`; d.dataset.chartId = id;
+  d.innerHTML = '📭 No data yet — log some habits and sync from Sheets to see charts!';
+  parent.appendChild(d);
+}
+function clearNoData(parent) {
+  parent.querySelectorAll('.no-data-notice').forEach(n => n.remove());
+}
+
+function setText(id, val) {
+  const e = document.getElementById(id);
+  if (e) e.textContent = val;
+}
+
+</script>
+</body>
+</html>
