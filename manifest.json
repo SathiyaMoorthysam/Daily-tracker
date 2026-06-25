@@ -1,0 +1,17 @@
+{
+  "name": "HabitOS — Daily Habit Tracker",
+  "short_name": "HabitOS",
+  "description": "Track your daily habits and build a better life",
+  "start_url": "/Daily-tracker/",
+  "scope": "/Daily-tracker/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0f0e17",
+  "background_color": "#0f0e17",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["health", "fitness", "lifestyle"],
+  "prefer_related_applications": false
+}

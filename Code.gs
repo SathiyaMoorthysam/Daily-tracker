@@ -1,246 +1,337 @@
-/* ════════════════════════════════════════════════
-   HABITOS — GOOGLE APPS SCRIPT (Sheets backend)
-   Handles BOTH read (doGet) and write (doPost).
+/* ═══════════════════════════════════════════════════════════════════════
+   HABITOS v2 — MULTI-USER BACKEND
+   Google Apps Script · Auth · Dynamic Goals · Per-User Sheets · Admin
+   ═══════════════════════════════════════════════════════════════════════ */
 
-   Deploy → New deployment → Web app
-   Execute as: Me | Who has access: Anyone
-════════════════════════════════════════════════ */
+const PROPS = PropertiesService.getScriptProperties();
 
-const SHEET_NAME = 'Daily Log';
-const DASH_NAME  = 'Dashboard';
-
-const COLUMNS = [
-  'Date','Day','Steps','Exercise (min)','Water (L)','Sleep (hrs)',
-  'Calories (kcal)','Protein (g)',
-  'No Smoking','No Drinking','Only Water','No Sugar','No Junk Food',
-  'Study (hrs)','Reading (pages)','Breathing (min)',
-  'Daily Score','Health Score','Productivity Score','Discipline Score',
-  'Completion %','Streak','Motivational Message',
-];
-
-// Map sheet header → JS field name
-const FIELD_MAP = {
-  'Date':'date','Day':'day',
-  'Steps':'steps','Exercise (min)':'exercise','Water (L)':'water','Sleep (hrs)':'sleep',
-  'Calories (kcal)':'calories','Protein (g)':'protein',
-  'No Smoking':'smoking','No Drinking':'drinking','Only Water':'onlywater',
-  'No Sugar':'sugar','No Junk Food':'junk',
-  'Study (hrs)':'study','Reading (pages)':'reading','Breathing (min)':'breathing',
-  'Daily Score':'dailyScore','Health Score':'healthScore',
-  'Productivity Score':'productivityScore','Discipline Score':'disciplineScore',
-  'Completion %':'completionPct','Streak':'streak','Motivational Message':'motivationalMessage',
+const CFG = {
+  MAX_USERS   : 5,
+  TOKEN_TTL_MS: 7 * 24 * 60 * 60 * 1000,
+  SALT        : 'h@b!tOS-s3cure-salt-2024',
+  VERSION     : '2.0.0'
 };
 
-/* ════════════════════════════════════════════════
-   doGet — READ endpoints
-   ?action=getData          → all rows as JSON array
-   ?action=getDate&date=X   → single row as JSON
-   (no action)              → health check JSON
-════════════════════════════════════════════════ */
+/* ─── ROUTER ─────────────────────────────────────────────────── */
 function doGet(e) {
-  const action = (e && e.parameter) ? e.parameter.action : null;
-
-  if (action === 'getData') {
-    return getAllRows();
-  }
-  if (action === 'getDate') {
-    const date = e.parameter.date || '';
-    return getRowByDate(date);
-  }
-  // Health check
-  return jsonResp({ status:'ok', message:'HabitOS API running. Use POST to log data, GET ?action=getData to read.' });
+  const p = e.parameter || {};
+  try   { return respond(route(p.action || '', p.token || '', p)); }
+  catch (err) { return respond({ ok:false, error: err.message }); }
 }
-
-/* ── Return all rows ── */
-function getAllRows() {
-  try {
-    const ss    = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet || sheet.getLastRow() < 2) {
-      return jsonResp({ status:'ok', records:[], count:0 });
-    }
-    const data    = sheet.getDataRange().getValues();
-    const headers = data[0];
-    const records = data.slice(1)
-      .filter(row => row[0]) // skip empty rows
-      .map(row => rowToObj(headers, row));
-    return jsonResp({ status:'ok', records, count:records.length });
-  } catch(err) {
-    return jsonResp({ status:'error', message:err.toString() });
-  }
-}
-
-/* ── Return one row by date ── */
-function getRowByDate(date) {
-  try {
-    const ss    = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SHEET_NAME);
-    if (!sheet || sheet.getLastRow() < 2) {
-      return jsonResp({ status:'notfound', record:null });
-    }
-    const data    = sheet.getDataRange().getValues();
-    const headers = data[0];
-    const row     = data.slice(1).find(r => String(r[0]) === date);
-    if (row) return jsonResp({ status:'ok', record: rowToObj(headers, row) });
-    return jsonResp({ status:'notfound', record:null });
-  } catch(err) {
-    return jsonResp({ status:'error', message:err.toString() });
-  }
-}
-
-/* ── Convert a sheet row to a JS object ── */
-function rowToObj(headers, row) {
-  const obj = {};
-  headers.forEach((h, i) => {
-    const key = FIELD_MAP[h] || h.toLowerCase().replace(/\s+/g,'_');
-    obj[key]  = row[i];
-  });
-  return obj;
-}
-
-/* ════════════════════════════════════════════════
-   doPost — WRITE endpoint
-════════════════════════════════════════════════ */
 function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    if (data.test) return jsonResp({ status:'ok', message:'HabitOS Google Sheets is live!' });
+  let b = {};
+  try { b = JSON.parse(e.postData.contents); } catch (_) {}
+  try   { return respond(route(b.action || '', b.token || '', b)); }
+  catch (err) { return respond({ ok:false, error: err.message }); }
+}
 
-    const ss    = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = getOrCreate(ss, SHEET_NAME);
-
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(COLUMNS);
-      formatHeader(sheet);
-    }
-
-    const row      = buildRow(data);
-    const existing = findByDate(sheet, data.date);
-    if (existing > 0) sheet.getRange(existing, 1, 1, row.length).setValues([row]);
-    else              sheet.appendRow(row);
-
-    applyConditional(sheet);
-    buildDashboard(ss, sheet);
-
-    return jsonResp({ status:'ok', message:'Saved.' });
-  } catch(err) {
-    return jsonResp({ status:'error', message:err.toString() });
+function route(action, token, p) {
+  switch (action) {
+    case 'health':           return { ok:true, version:CFG.VERSION, msg:'HabitOS API v2 running' };
+    /* Auth */
+    case 'register':         return authRegister(p);
+    case 'login':            return authLogin(p.email, p.password);
+    case 'logout':           return authLogout(token);
+    case 'verify':           return { ok:true, user: safeUser(requireAuth(token)) };
+    case 'changePassword':   return authChangePassword(token, p.oldPassword, p.newPassword);
+    case 'updateProfile':    return authUpdateProfile(token, p);
+    /* Goals */
+    case 'goals.get':        return goalsGet(token);
+    case 'goals.save':       return goalsSave(token, p.goals);
+    case 'goals.add':        return goalsAdd(token, p.goal);
+    case 'goals.edit':       return goalsEdit(token, p.goalId, p.updates);
+    case 'goals.remove':     return goalsRemove(token, p.goalId);
+    case 'goals.reorder':    return goalsReorder(token, p.goalIds);
+    case 'goals.toggle':     return goalsEdit(token, p.goalId, { enabled: p.enabled });
+    case 'categories.get':   return categoriesGet(token);
+    case 'categories.save':  return categoriesSave(token, p.categories);
+    /* Data */
+    case 'data.log':         return dataLog(token, p.data);
+    case 'data.get':         return dataGet(token, p.date);
+    case 'data.history':     return dataHistory(token, p.limit || 90);
+    /* Sheet */
+    case 'sheet.url':        return sheetUrl(token);
+    case 'sheet.verify':     return sheetVerify(token);
+    /* Admin */
+    case 'admin.users':      return adminUsers(token);
+    case 'admin.deactivate': return adminSetActive(token, p.userId, false);
+    case 'admin.activate':   return adminSetActive(token, p.userId, true);
+    case 'admin.resetPass':  return adminResetPass(token, p.userId, p.newPassword);
+    case 'admin.delete':     return adminDelete(token, p.userId);
+    default: throw new Error('Unknown action: ' + action);
   }
 }
 
-function buildRow(d) {
-  return [
-    d.date||'', d.day||'',
-    d.steps||0, d.exercise||0, d.water||0, d.sleep||0, d.calories||0, d.protein||0,
-    d.smoking||'No', d.drinking||'No', d.onlywater||'No', d.sugar||'No', d.junk||'No',
-    d.study||0, d.reading||0, d.breathing||0,
-    d.dailyScore||0, d.healthScore||0, d.productivityScore||0, d.disciplineScore||0,
-    d.completionPct||0, d.streak||0, d.motivationalMessage||'',
-  ];
+/* ═══ AUTH ════════════════════════════════════════════════════ */
+function authRegister({ name, email, password }) {
+  if (!name || !email || !password) throw new Error('Name, email and password required');
+  email = email.toLowerCase().trim();
+  const users = getUsers();
+  if (users.length >= CFG.MAX_USERS) throw new Error('Max ' + CFG.MAX_USERS + ' users allowed');
+  if (users.find(u => u.email === email)) throw new Error('Email already registered');
+  const isAdmin = users.length === 0;
+  const uid     = 'u_' + Utilities.getUuid().replace(/-/g,'').substr(0,12);
+  const user    = { id:uid, name:name.trim(), email, password:hashPass(password),
+                    role:isAdmin?'admin':'user', active:true, createdAt:new Date().toISOString() };
+  users.push(user);
+  saveUsers(users);
+  PROPS.setProperty('goals_'+uid, JSON.stringify(defaultGoals()));
+  PROPS.setProperty('cats_' +uid, JSON.stringify(defaultCategories()));
+  try { ensureUserSheet(uid, name.trim()); } catch(_) {}
+  const token = createToken(uid);
+  return { ok:true, token, user:safeUser(user) };
 }
 
-function formatHeader(sheet) {
-  const r = sheet.getRange(1,1,1,COLUMNS.length);
-  r.setBackground('#1a1d2e').setFontColor('#ffffff').setFontWeight('bold').setFontSize(11).setHorizontalAlignment('center');
+function authLogin(email, password) {
+  if (!email || !password) throw new Error('Email and password required');
+  const user = getUsers().find(u => u.email === email.toLowerCase().trim());
+  if (!user || !user.active) throw new Error('Invalid credentials');
+  if (user.password !== hashPass(password)) throw new Error('Invalid credentials');
+  const token = createToken(user.id);
+  return { ok:true, token, user:safeUser(user) };
+}
+
+function authLogout(token) {
+  PROPS.deleteProperty('tok_'+token);
+  return { ok:true };
+}
+
+function authChangePassword(token, oldPass, newPass) {
+  const user = requireAuth(token);
+  if (user.password !== hashPass(oldPass)) throw new Error('Current password incorrect');
+  const users = getUsers();
+  const idx   = users.findIndex(u => u.id === user.id);
+  users[idx].password = hashPass(newPass);
+  saveUsers(users);
+  return { ok:true };
+}
+
+function authUpdateProfile(token, { name, email }) {
+  const user  = requireAuth(token);
+  const users = getUsers();
+  const idx   = users.findIndex(u => u.id === user.id);
+  if (name)  users[idx].name  = name.trim();
+  if (email) users[idx].email = email.toLowerCase().trim();
+  saveUsers(users);
+  return { ok:true, user:safeUser(users[idx]) };
+}
+
+/* ═══ GOALS ═══════════════════════════════════════════════════ */
+function goalsGet(token) {
+  const user = requireAuth(token);
+  return { ok:true, goals: JSON.parse(PROPS.getProperty('goals_'+user.id)||'[]') };
+}
+function goalsSave(token, goals) {
+  const user = requireAuth(token);
+  PROPS.setProperty('goals_'+user.id, JSON.stringify(goals));
+  try { syncSheetHeaders(user.id, goals); } catch(_) {}
+  return { ok:true };
+}
+function goalsAdd(token, goal) {
+  const user  = requireAuth(token);
+  const goals = JSON.parse(PROPS.getProperty('goals_'+user.id)||'[]');
+  goal.id = 'g_'+Date.now(); goal.enabled=true; goal.order=goals.length;
+  goal.createdAt = new Date().toISOString();
+  goals.push(goal);
+  PROPS.setProperty('goals_'+user.id, JSON.stringify(goals));
+  try { syncSheetHeaders(user.id, goals); } catch(_) {}
+  return { ok:true, goal };
+}
+function goalsEdit(token, goalId, updates) {
+  const user  = requireAuth(token);
+  const goals = JSON.parse(PROPS.getProperty('goals_'+user.id)||'[]');
+  const idx   = goals.findIndex(g => g.id === goalId);
+  if (idx===-1) throw new Error('Goal not found');
+  goals[idx] = Object.assign({}, goals[idx], updates, { id:goalId });
+  PROPS.setProperty('goals_'+user.id, JSON.stringify(goals));
+  try { syncSheetHeaders(user.id, goals); } catch(_) {}
+  return { ok:true };
+}
+function goalsRemove(token, goalId) {
+  const user  = requireAuth(token);
+  const goals = JSON.parse(PROPS.getProperty('goals_'+user.id)||'[]').filter(g=>g.id!==goalId);
+  PROPS.setProperty('goals_'+user.id, JSON.stringify(goals));
+  return { ok:true };
+}
+function goalsReorder(token, goalIds) {
+  const user  = requireAuth(token);
+  const goals = JSON.parse(PROPS.getProperty('goals_'+user.id)||'[]');
+  const map   = Object.fromEntries(goals.map(g=>[g.id,g]));
+  const reordered = goalIds.map((id,i)=>{ if(map[id]) map[id].order=i; return map[id]; }).filter(Boolean);
+  PROPS.setProperty('goals_'+user.id, JSON.stringify(reordered));
+  return { ok:true };
+}
+function categoriesGet(token) {
+  const user = requireAuth(token);
+  return { ok:true, categories: JSON.parse(PROPS.getProperty('cats_'+user.id)||'null') || defaultCategories() };
+}
+function categoriesSave(token, categories) {
+  const user = requireAuth(token);
+  PROPS.setProperty('cats_'+user.id, JSON.stringify(categories));
+  return { ok:true };
+}
+
+/* ═══ DATA ════════════════════════════════════════════════════ */
+function dataLog(token, data) {
+  const user  = requireAuth(token);
+  const goals = JSON.parse(PROPS.getProperty('goals_'+user.id)||'[]');
+  const sheet = getUserSheetTab(user.id);
+  if (!sheet) return { ok:false, error:'Sheet not ready' };
+  ensureSheetHeaders(sheet, goals);
+  const headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];
+  const date    = data.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const allRows = sheet.getDataRange().getValues();
+  let rowIdx = -1;
+  for (let i=1; i<allRows.length; i++) { if (String(allRows[i][0])===String(date)) { rowIdx=i+1; break; } }
+  const row = headers.map(h => {
+    if (h==='Date') return date;
+    if (h==='Day')  return new Date(date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'});
+    return (data[h]!==undefined && data[h]!==null) ? data[h] : '';
+  });
+  if (rowIdx===-1) sheet.appendRow(row);
+  else             sheet.getRange(rowIdx,1,1,row.length).setValues([row]);
+  return { ok:true };
+}
+function dataGet(token, date) {
+  const user  = requireAuth(token);
+  const sheet = getUserSheetTab(user.id);
+  if (!sheet || sheet.getLastRow()<2) return { ok:true, record:null };
+  const all=sheet.getDataRange().getValues(); const headers=all[0];
+  const row=all.slice(1).find(r=>String(r[0])===String(date));
+  if (!row) return { ok:true, record:null };
+  const record={}; headers.forEach((h,i)=>record[h]=row[i]);
+  return { ok:true, record };
+}
+function dataHistory(token, limit) {
+  const user  = requireAuth(token);
+  const sheet = getUserSheetTab(user.id);
+  if (!sheet || sheet.getLastRow()<2) return { ok:true, records:[] };
+  const all=sheet.getDataRange().getValues(); const headers=all[0];
+  const records = all.slice(1).filter(r=>r[0]).slice(-Number(limit))
+    .map(row=>{ const r={}; headers.forEach((h,i)=>r[h]=row[i]); return r; });
+  return { ok:true, records };
+}
+
+/* ═══ SHEETS ══════════════════════════════════════════════════ */
+function getMasterSS() {
+  let id = PROPS.getProperty('master_ss_id');
+  if (id) { try { return SpreadsheetApp.openById(id); } catch(_) {} }
+  const ss = SpreadsheetApp.create('HabitOS — Data');
+  PROPS.setProperty('master_ss_id', ss.getId());
+  const ov = ss.getSheets()[0]; ov.setName('Overview');
+  ov.getRange('A1').setValue('HabitOS Multi-User Data').setFontSize(16).setFontWeight('bold').setFontColor('#6366f1');
+  ov.getRange('A2').setValue('Each user has their own tab. Tabs are named Data_<userId>.').setFontColor('#666');
+  return ss;
+}
+function getUserSheetTab(userId) {
+  try { return getMasterSS().getSheetByName('Data_'+userId)||null; } catch(_) { return null; }
+}
+function ensureUserSheet(userId, userName) {
+  const ss=getMasterSS(); const name='Data_'+userId;
+  if (!ss.getSheetByName(name)) {
+    const sh=ss.insertSheet(name);
+    sh.getRange('A1').setValue('HabitOS | '+userName+' | initialized '+new Date().toLocaleDateString());
+  }
+}
+function ensureSheetHeaders(sheet, goals) {
+  const enabled  = goals.filter(g=>g.enabled!==false);
+  const required = ['Date','Day',...enabled.map(g=>g.name),'Daily Score','Health Score','Productivity Score','Discipline Score','Completion %'];
+  const lastCol  = sheet.getLastColumn();
+  const existing = lastCol>0 ? sheet.getRange(1,1,1,lastCol).getValues()[0].map(String) : [];
+  required.forEach(h => { if (!existing.includes(h)) { existing.push(h); sheet.getRange(1,existing.length).setValue(h); } });
+  const hdr = sheet.getRange(1,1,1,existing.length);
+  hdr.setBackground('#312e81').setFontColor('#fff').setFontWeight('bold');
   sheet.setFrozenRows(1);
-  sheet.setColumnWidth(1,100); sheet.setColumnWidth(23,280);
+}
+function syncSheetHeaders(userId, goals) {
+  const sheet=getUserSheetTab(userId);
+  if (sheet && sheet.getLastRow()>0) ensureSheetHeaders(sheet, goals);
+}
+function sheetUrl(token) {
+  const user=requireAuth(token); const ss=getMasterSS(); const tab=getUserSheetTab(user.id);
+  return { ok:true, url: ss.getUrl()+'#gid='+(tab?tab.getSheetId():0) };
+}
+function sheetVerify(token) {
+  const user=requireAuth(token); const tab=getUserSheetTab(user.id);
+  return { ok:true, connected:!!tab };
 }
 
-function findByDate(sheet, date) {
-  const last = sheet.getLastRow();
-  if (last < 2) return -1;
-  const vals = sheet.getRange(2,1,last-1,1).getValues().flat();
-  const idx  = vals.indexOf(date);
-  return idx >= 0 ? idx+2 : -1;
+/* ═══ ADMIN ═══════════════════════════════════════════════════ */
+function requireAdmin(token) { const u=requireAuth(token); if(u.role!=='admin') throw new Error('Admin only'); return u; }
+function adminUsers(token) { requireAdmin(token); return { ok:true, users:getUsers().map(safeUser) }; }
+function adminSetActive(token, userId, active) {
+  requireAdmin(token);
+  const users=getUsers(); const idx=users.findIndex(u=>u.id===userId);
+  if(idx===-1) throw new Error('User not found');
+  users[idx].active=active; saveUsers(users); return { ok:true };
 }
-
-function applyConditional(sheet) {
-  const last = sheet.getLastRow();
-  if (last < 2) return;
-  [17,18,19,20,21].forEach(col => {
-    const rng   = sheet.getRange(2,col,last-1,1);
-    const rules = sheet.getConditionalFormatRules();
-    rules.push(
-      SpreadsheetApp.newConditionalFormatRule().whenNumberGreaterThanOrEqualTo(75).setBackground('#d1fae5').setFontColor('#065f46').setRanges([rng]).build(),
-      SpreadsheetApp.newConditionalFormatRule().whenNumberBetween(50,74).setBackground('#fef3c7').setFontColor('#92400e').setRanges([rng]).build(),
-      SpreadsheetApp.newConditionalFormatRule().whenNumberLessThan(50).setBackground('#fee2e2').setFontColor('#991b1b').setRanges([rng]).build()
-    );
-    sheet.setConditionalFormatRules(rules);
+function adminResetPass(token, userId, newPassword) {
+  requireAdmin(token);
+  if (!newPassword||newPassword.length<6) throw new Error('Password must be >= 6 chars');
+  const users=getUsers(); const idx=users.findIndex(u=>u.id===userId);
+  if(idx===-1) throw new Error('User not found');
+  users[idx].password=hashPass(newPassword); saveUsers(users); return { ok:true };
+}
+function adminDelete(token, userId) {
+  const admin=requireAdmin(token);
+  if (admin.id===userId) throw new Error('Cannot delete yourself');
+  saveUsers(getUsers().filter(u=>u.id!==userId));
+  PROPS.deleteProperty('goals_'+userId); PROPS.deleteProperty('cats_'+userId);
+  const all=PROPS.getProperties();
+  Object.keys(all).filter(k=>k.startsWith('tok_')).forEach(k=>{
+    try { const d=JSON.parse(all[k]); if(d.userId===userId) PROPS.deleteProperty(k); } catch(_){}
   });
+  return { ok:true };
 }
 
-function buildDashboard(ss, logSheet) {
-  let dash = ss.getSheetByName(DASH_NAME) || ss.insertSheet(DASH_NAME, 0);
-  dash.clearContents(); dash.clearFormats();
-  const lr  = logSheet.getLastRow();
-  const log = `'${SHEET_NAME}'!`;
+/* ═══ HELPERS ═════════════════════════════════════════════════ */
+function requireAuth(token) {
+  if (!token) throw new Error('Authentication required');
+  const raw=PROPS.getProperty('tok_'+token);
+  if (!raw) throw new Error('Session expired — please log in');
+  const {userId, expiresAt}=JSON.parse(raw);
+  if (Date.now()>expiresAt) { PROPS.deleteProperty('tok_'+token); throw new Error('Session expired'); }
+  const user=getUsers().find(u=>u.id===userId);
+  if (!user||!user.active) throw new Error('Account not found or deactivated');
+  return user;
+}
+function createToken(userId) {
+  const t=Utilities.getUuid();
+  PROPS.setProperty('tok_'+t, JSON.stringify({ userId, expiresAt:Date.now()+CFG.TOKEN_TTL_MS }));
+  return t;
+}
+function hashPass(p) {
+  const d=Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, p+CFG.SALT);
+  return d.map(b=>(b<0?b+256:b).toString(16).padStart(2,'0')).join('');
+}
+function getUsers()    { return JSON.parse(PROPS.getProperty('users')||'[]'); }
+function saveUsers(u)  { PROPS.setProperty('users', JSON.stringify(u)); }
+function safeUser(u)   { return {id:u.id,name:u.name,email:u.email,role:u.role,active:u.active,createdAt:u.createdAt}; }
+function respond(data) { return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON); }
 
-  dash.getRange('A1').setValue('⚡ HabitOS — Dashboard').setFontSize(18).setFontWeight('bold').setFontColor('#6366f1');
-  dash.getRange('A2').setValue(`Updated: ${new Date().toLocaleString()}`).setFontSize(10).setFontColor('#888');
-  dash.getRange('A4').setValue('KPI METRICS').setFontWeight('bold').setFontSize(12);
-
-  const kpis = [
-    ['Current Streak',  `=${log}V${lr}`],
-    ['Best Streak',     `=MAX(${log}V2:V)`],
-    ['Avg Daily Score', `=IFERROR(AVERAGE(${log}Q2:Q),0)`],
-    ['Avg Completion',  `=IFERROR(AVERAGE(${log}U2:U),0)`],
-    ['Days Logged',     `=COUNTA(${log}A2:A)`],
-    ['Best Day Score',  `=MAX(${log}Q2:Q)`],
+/* ═══ DEFAULTS ════════════════════════════════════════════════ */
+function defaultGoals() {
+  return [
+    {id:'steps',      name:'Walking',      icon:'🚶', type:'quantity', target:10000, unit:'steps', category:'Essential',       color:'#6366f1', enabled:true, order:0},
+    {id:'exercise',   name:'Exercise',     icon:'💪', type:'quantity', target:45,    unit:'min',   category:'Essential',       color:'#8b5cf6', enabled:true, order:1},
+    {id:'water',      name:'Water Intake', icon:'💧', type:'quantity', target:4,     unit:'L',     category:'Essential',       color:'#06b6d4', enabled:true, order:2},
+    {id:'sleep',      name:'Sleep',        icon:'😴', type:'quantity', target:8,     unit:'hrs',   category:'Essential',       color:'#f59e0b', enabled:true, order:3},
+    {id:'calories',   name:'Calories',     icon:'🔥', type:'quantity', target:1600,  unit:'kcal',  category:'Essential',       color:'#ef4444', enabled:true, order:4},
+    {id:'protein',    name:'Protein',      icon:'🥩', type:'quantity', target:90,    unit:'g',     category:'Essential',       color:'#10b981', enabled:true, order:5},
+    {id:'no_smoking', name:'No Smoking',   icon:'🚭', type:'boolean',  target:1,     unit:'day',   category:'First Priority',  color:'#f87171', enabled:true, order:6},
+    {id:'no_drinking',name:'No Drinking',  icon:'🍺', type:'boolean',  target:1,     unit:'day',   category:'First Priority',  color:'#fb923c', enabled:true, order:7},
+    {id:'only_water', name:'Only Water',   icon:'🥤', type:'boolean',  target:1,     unit:'day',   category:'First Priority',  color:'#34d399', enabled:true, order:8},
+    {id:'no_sugar',   name:'No Sugar',     icon:'🍬', type:'boolean',  target:1,     unit:'day',   category:'First Priority',  color:'#a78bfa', enabled:true, order:9},
+    {id:'no_junk',    name:'No Junk Food', icon:'🍔', type:'boolean',  target:1,     unit:'day',   category:'First Priority',  color:'#f43f5e', enabled:true, order:10},
+    {id:'study',      name:'Study',        icon:'📚', type:'quantity', target:1.5,   unit:'hrs',   category:'Second Priority', color:'#4ade80', enabled:true, order:11},
+    {id:'reading',    name:'Reading',      icon:'📖', type:'quantity', target:2,     unit:'pages', category:'Second Priority', color:'#60a5fa', enabled:true, order:12},
+    {id:'breathing',  name:'Breathing',    icon:'🧘', type:'quantity', target:5,     unit:'min',   category:'Second Priority', color:'#c084fc', enabled:true, order:13},
   ];
-  kpis.forEach(([label,formula],i)=>{
-    dash.getRange(5,i+1).setValue(label).setFontSize(9).setFontColor('#888').setHorizontalAlignment('center');
-    dash.getRange(6,i+1).setFormula(formula).setFontSize(22).setFontWeight('bold').setFontColor('#6366f1').setHorizontalAlignment('center');
-    dash.setColumnWidth(i+1,130);
-  });
-  dash.getRange(6,4).setNumberFormat('0"%"');
-
-  // Last 7 days table
-  dash.getRange('A9').setValue('LAST 7 DAYS').setFontWeight('bold').setFontSize(12);
-  ['Date','Day','Daily Score','Health','Productivity','Discipline','Completion%','Streak'].forEach((h,i)=>{
-    dash.getRange(10,i+1).setValue(h).setFontWeight('bold').setBackground('#1a1d2e').setFontColor('#fff').setHorizontalAlignment('center');
-  });
-  const from = Math.max(2, lr-6);
-  for (let r=from; r<=lr; r++) {
-    const d = 11+(r-from);
-    [`=${log}A${r}`,`=${log}B${r}`,`=${log}Q${r}`,`=${log}R${r}`,`=${log}S${r}`,`=${log}T${r}`,`=${log}U${r}`,`=${log}V${r}`]
-      .forEach((f,i)=>dash.getRange(d,i+1).setFormula(f));
-  }
-
-  // Habit consistency table
-  dash.getRange('A20').setValue('HABIT CONSISTENCY').setFontWeight('bold').setFontSize(12);
-  const habitRows = [
-    ['Walking (≥10k)',    `=IFERROR(COUNTIF(${log}C2:C,">=10000")/COUNTA(${log}C2:C)*100,0)`],
-    ['Exercise (≥45min)', `=IFERROR(COUNTIF(${log}D2:D,">=45")/COUNTA(${log}D2:D)*100,0)`],
-    ['Water (≥4L)',       `=IFERROR(COUNTIF(${log}E2:E,">=4")/COUNTA(${log}E2:E)*100,0)`],
-    ['Sleep (7-8h)',      `=IFERROR(COUNTIFS(${log}F2:F,">=7",${log}F2:F,"<=8")/COUNTA(${log}F2:F)*100,0)`],
-    ['Calories in range', `=IFERROR(COUNTIFS(${log}G2:G,">=1600",${log}G2:G,"<=1800")/COUNTA(${log}G2:G)*100,0)`],
-    ['Protein (≥90g)',    `=IFERROR(COUNTIF(${log}H2:H,">=90")/COUNTA(${log}H2:H)*100,0)`],
-    ['No Smoking',        `=IFERROR(COUNTIF(${log}I2:I,"Yes")/COUNTA(${log}I2:I)*100,0)`],
-    ['No Drinking',       `=IFERROR(COUNTIF(${log}J2:J,"Yes")/COUNTA(${log}J2:J)*100,0)`],
-    ['Only Water',        `=IFERROR(COUNTIF(${log}K2:K,"Yes")/COUNTA(${log}K2:K)*100,0)`],
-    ['No Sugar',          `=IFERROR(COUNTIF(${log}L2:L,"Yes")/COUNTA(${log}L2:L)*100,0)`],
-    ['No Junk Food',      `=IFERROR(COUNTIF(${log}M2:M,"Yes")/COUNTA(${log}M2:M)*100,0)`],
-    ['Study (≥1.5h)',     `=IFERROR(COUNTIF(${log}N2:N,">=1.5")/COUNTA(${log}N2:N)*100,0)`],
-    ['Reading (≥2 pages)',`=IFERROR(COUNTIF(${log}O2:O,">=2")/COUNTA(${log}O2:O)*100,0)`],
-    ['Breathing (≥5min)', `=IFERROR(COUNTIF(${log}P2:P,">=5")/COUNTA(${log}P2:P)*100,0)`],
-  ];
-  dash.getRange(21,1).setValue('Habit').setFontWeight('bold').setBackground('#e8eaf6');
-  dash.getRange(21,2).setValue('Consistency %').setFontWeight('bold').setBackground('#e8eaf6');
-  dash.setColumnWidth(1,200);
-  habitRows.forEach(([label,formula],i)=>{
-    dash.getRange(22+i,1).setValue(label);
-    dash.getRange(22+i,2).setFormula(formula).setNumberFormat('0.0"%"').setHorizontalAlignment('center');
-  });
-  const cfRange = dash.getRange(22,2,habitRows.length,1);
-  dash.setConditionalFormatRules([
-    SpreadsheetApp.newConditionalFormatRule().whenNumberGreaterThanOrEqualTo(80).setBackground('#d1fae5').setFontColor('#065f46').setRanges([cfRange]).build(),
-    SpreadsheetApp.newConditionalFormatRule().whenNumberBetween(50,79).setBackground('#fef3c7').setFontColor('#92400e').setRanges([cfRange]).build(),
-    SpreadsheetApp.newConditionalFormatRule().whenNumberLessThan(50).setBackground('#fee2e2').setFontColor('#991b1b').setRanges([cfRange]).build(),
-  ]);
-  dash.autoResizeColumns(1,8);
 }
-
-function getOrCreate(ss, name) { return ss.getSheetByName(name)||ss.insertSheet(name); }
-function jsonResp(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+function defaultCategories() {
+  return [
+    { name:'Essential',       weight:50, color:'#ef4444', icon:'⭐' },
+    { name:'First Priority',  weight:35, color:'#f97316', icon:'🔶' },
+    { name:'Second Priority', weight:15, color:'#eab308', icon:'🔸' },
+  ];
 }
