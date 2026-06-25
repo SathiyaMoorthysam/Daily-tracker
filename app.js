@@ -43,7 +43,7 @@ function updateLockState() {
   const locked = isDateLocked(state.currentDate);
   const banner = el('lock-banner');
   if (banner) banner.style.display = locked ? 'flex' : 'none';
-  qsa('.habit-input,.qty-btn,.toggle-input').forEach(e => {
+  qsa('.habit-input,.qty-btn,.qty-input,.toggle-input').forEach(e => {
     e.disabled = locked; e.style.opacity = locked ? '0.4' : '1';
   });
   const sb = el('submit-btn');
@@ -100,25 +100,19 @@ async function checkAuth() {
 /* ─── Init ───────────────────────────────────────────────────────── */
 async function init() {
   restoreTheme();
-  /* Overlay starts visible (in HTML). Hide only after successful auth+load */
-
   state.currentDate = todayStr();
-
   const ok = await checkAuth();
-  if (!ok) return; /* Redirect is in progress — keep overlay showing */
-
-  /* Auth confirmed ── update nav */
+  if (!ok) return;
   const uname = el('user-name');
   if (uname) uname.textContent = state.user.name;
   if (state.user.role === 'admin') qsa('.admin-only').forEach(e => e.style.display = 'flex');
-
   showSection('dashboard');
   await loadAllData();
 }
 
 /* ─── Data ───────────────────────────────────────────────────────── */
 async function loadAllData() {
-  showLoading(true, 'Loading your habits…');
+  showLoading(true, 'Loading your habits...');
   try {
     const [gR, cR, hR] = await Promise.all([
       API.goalsGet(), API.categoriesGet(), API.getHistory(90)
@@ -149,13 +143,13 @@ function showApiError(msg) {
   const c = el('habit-sections');
   if (c) c.innerHTML = `
     <div class="api-error-card">
-      <div class="api-error-icon">⚠️</div>
+      <div class="api-error-icon">Warning</div>
       <div class="api-error-title">Connection Error</div>
       <div class="api-error-msg">${msg}</div>
       <div class="api-error-actions">
-        <button class="btn-primary sm" onclick="loadAllData()">🔄 Retry</button>
-        <button class="btn-secondary sm" onclick="showSection('settings')">⚙️ Settings</button>
-        <button class="btn-secondary sm" onclick="logout()">🚪 Logout</button>
+        <button class="btn-primary sm" onclick="loadAllData()">Retry</button>
+        <button class="btn-secondary sm" onclick="showSection('settings')">Settings</button>
+        <button class="btn-secondary sm" onclick="logout()">Logout</button>
       </div>
     </div>`;
   const rings = el('score-rings');
@@ -187,8 +181,10 @@ function updateAllInputs() {
     if (g.type === 'boolean') {
       const inp = el('inp-' + g.id); if (inp) inp.checked = parseFloat(val) >= 1;
     } else {
-      const disp = el('val-' + g.id);
-      if (disp) disp.textContent = (val !== undefined && val !== '') ? val : 0;
+      const inp = el('val-' + g.id);
+      const v = (val !== undefined && val !== '') ? val : 0;
+      if (inp) inp.value = v;
+      if (isCaloriesGoal(g)) updateCalorieFeedback(g.id, v);
     }
   });
   refreshScoreBadge();
@@ -226,6 +222,70 @@ function renderScoreRings() {
     </div>`).join('');
 }
 
+/* ─── Goal type helpers ──────────────────────────────────────────── */
+function isCaloriesGoal(g) {
+  return g.id === 'calories' || g.unit === 'kcal';
+}
+function isStepsGoal(g) {
+  return g.id === 'steps' || g.unit === 'steps';
+}
+function isProteinGoal(g) {
+  const id = (g.id || '').toLowerCase();
+  return (g.unit === 'g' && (id === 'protein' || id.includes('protein')));
+}
+
+/* ─── Step sizes ─────────────────────────────────────────────────── */
+function getStep(g) {
+  if (!g) return 1;
+  if (isStepsGoal(g))    return 500;    // Walking: 500 steps per click
+  if (isCaloriesGoal(g)) return 250;    // Calories: 250 kcal per click
+  if (isProteinGoal(g))  return 10;     // Protein: 10 g per click
+  if (g.unit === 'L' || g.unit === 'hrs') return 0.5;
+  if (g.unit === 'min')  return 5;
+  return 1;
+}
+
+/* ─── Calorie Feedback ───────────────────────────────────────────── */
+const CAL_MSGS = {
+  low: [
+    "Your calorie intake is quite low today. Make sure you're eating enough nutritious food to fuel your body and support recovery.",
+    "Low energy alert! Your body needs more fuel - try adding a balanced meal or healthy snack.",
+    "You're running low on calories. Nourish your body with wholesome foods to maintain energy and focus.",
+    "Eating too little can affect your metabolism. Consider adding a nutritious meal or snack today.",
+    "Your body is signalling for fuel. A balanced, nutritious meal now will help you power through the rest of the day.",
+  ],
+  good: [
+    "Great! You're within a healthy calorie range. Keep maintaining this balance and stay consistent.",
+    "Perfect fuel balance! You're nourishing your body just right - keep up this excellent work!",
+    "On track with your calorie goals. This intake supports your health and fitness journey beautifully.",
+    "Healthy intake achieved! Your body is getting the right amount of fuel. Stay consistent and keep it up!",
+    "Well done - you're in the sweet spot. Balanced nutrition today means more energy and better results.",
+  ],
+  high: [
+    "Your calorie intake is above your target today. Consider increasing your walking or exercise to stay on track.",
+    "A bit over target! Maintain portion control while still enjoying balanced meals, and add an extra walk.",
+    "Above your calorie goal. Stay active - every bit of movement helps balance things out.",
+    "Consider a brisk walk or workout session to balance your intake today. You've got this!",
+    "Try adding an extra walk or exercise session today to help maintain your fitness goals.",
+  ],
+};
+
+function getCalorieFeedback(calories) {
+  const cal = parseFloat(calories) || 0;
+  if (cal <= 0) return { msg: '', cls: '' };
+  const idx = Math.floor(cal / 100) % 5;
+  if (cal < 1200)  return { msg: '⚠️ ' + CAL_MSGS.low[idx  % CAL_MSGS.low.length],  cls: 'low'  };
+  if (cal <= 1600) return { msg: '✅ ' + CAL_MSGS.good[idx % CAL_MSGS.good.length], cls: 'good' };
+  return               { msg: '🔥 ' + CAL_MSGS.high[idx % CAL_MSGS.high.length], cls: 'high' };
+}
+
+function updateCalorieFeedback(gid, calories) {
+  const fb = el('cal-fb-' + gid); if (!fb) return;
+  const { msg, cls } = getCalorieFeedback(calories);
+  fb.textContent = msg;
+  fb.className = 'calorie-feedback' + (cls ? ' ' + cls : '');
+}
+
 /* ─── Habit Cards ────────────────────────────────────────────────── */
 function renderHabitCards() {
   const c = el('habit-sections'); if (!c) return;
@@ -234,7 +294,7 @@ function renderHabitCards() {
     c.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--muted)">
       <div style="font-size:40px;margin-bottom:12px">🎯</div>
       <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">No habits yet</div>
-      <div style="font-size:14px">Go to <strong>Settings → Goal Manager</strong> to add habits.</div>
+      <div style="font-size:14px">Go to <strong>Settings &rarr; Goal Manager</strong> to add habits.</div>
     </div>`; return;
   }
   const bc = {}; state.categories.forEach(cat => { bc[cat.name] = []; });
@@ -253,9 +313,10 @@ function renderHabitCards() {
 }
 
 function renderCard(g) {
-  const val = state.today[g.name];
+  const val    = state.today[g.name];
   const streak = state.streaks[g.id] || 0;
   const locked = isDateLocked(state.currentDate);
+
   if (g.type === 'boolean') {
     const ch = parseFloat(val) >= 1;
     return `<div class="habit-card ${ch ? 'done' : ''}" id="card-${g.id}">
@@ -272,8 +333,13 @@ function renderCard(g) {
       </label>
     </div>`;
   }
-  const cur = (val !== undefined && val !== '') ? parseFloat(val) : 0;
-  const pct = Math.min(100, Math.round((cur / (g.target || 1)) * 100));
+
+  const cur  = (val !== undefined && val !== '') ? parseFloat(val) : 0;
+  const pct  = Math.min(100, Math.round((cur / (g.target || 1)) * 100));
+  const step = getStep(g);
+  const isCal = isCaloriesGoal(g);
+  const calFb  = isCal ? getCalorieFeedback(cur) : null;
+
   return `<div class="habit-card ${pct >= 100 ? 'done' : ''}" id="card-${g.id}">
     <div class="habit-top">
       <span class="habit-icon">${g.icon || '📊'}</span>
@@ -282,14 +348,26 @@ function renderCard(g) {
     <div class="habit-name">${g.name}</div>
     <div class="qty-row">
       <button class="qty-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},-1)" ${locked ? 'disabled' : ''}>−</button>
-      <span class="qty-val" id="val-${g.id}">${cur}</span>
+      <input
+        type="number"
+        class="qty-input"
+        id="val-${g.id}"
+        value="${cur}"
+        min="0"
+        step="${step}"
+        autocomplete="off"
+        ${locked ? 'disabled' : ''}
+        oninput="handleManualInput('${g.id}','${g.name}',${g.target || 1},this)"
+        onchange="handleManualInput('${g.id}','${g.name}',${g.target || 1},this)"
+      />
       <span class="qty-unit">${g.unit || ''}</span>
       <button class="qty-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},1)" ${locked ? 'disabled' : ''}>+</button>
     </div>
     <div class="habit-bar">
-      <div class="habit-bar-fill" style="width:${pct}%;background:${g.color || '#6366f1'}"></div>
+      <div class="habit-bar-fill" id="bar-${g.id}" style="width:${pct}%;background:${g.color || '#6366f1'}"></div>
     </div>
-    <div class="habit-target">Target: ${g.target} ${g.unit || ''} · ${pct}%</div>
+    <div class="habit-target" id="tgt-${g.id}">Target: ${g.target} ${g.unit || ''} · ${pct}%</div>
+    ${isCal ? `<div class="calorie-feedback ${calFb.cls}" id="cal-fb-${g.id}">${calFb.msg}</div>` : ''}
   </div>`;
 }
 
@@ -298,7 +376,7 @@ function toggleBoolean(gid, gn, ch) {
   if (isDateLocked(state.currentDate)) return;
   state.today[gn] = ch ? 1 : 0;
   const card = el('card-' + gid); if (card) card.classList.toggle('done', ch);
-  refreshScoreBadge(); renderScoreRings();
+  refreshScoreBadge(); renderScoreRings(); renderMotivation();
 }
 
 function adjustHabit(gid, gn, target, delta) {
@@ -308,25 +386,56 @@ function adjustHabit(gid, gn, target, delta) {
   let cur = parseFloat(state.today[gn]) || 0;
   cur = Math.max(0, Math.round((cur + delta * step) * 1000) / 1000);
   state.today[gn] = cur;
-  const ve = el('val-' + gid); if (ve) ve.textContent = cur;
-  const pct = Math.min(100, Math.round((cur / (target || 1)) * 100));
+
+  // Sync the input field
+  const ve = el('val-' + gid); if (ve) ve.value = cur;
+
+  // Update progress bar, label, card completion state
+  const pct  = Math.min(100, Math.round((cur / (target || 1)) * 100));
   const card = el('card-' + gid);
   if (card) {
     card.classList.toggle('done', pct >= 100);
-    const bar = card.querySelector('.habit-bar-fill');
+    const bar = el('bar-' + gid);
     if (bar) bar.style.width = pct + '%';
-    const tgt = card.querySelector('.habit-target');
+    const tgt = el('tgt-' + gid);
     if (tgt) tgt.textContent = 'Target: ' + target + ' ' + (g?.unit || '') + ' · ' + pct + '%';
+    // Animate
+    card.classList.add('value-changed');
+    setTimeout(() => card.classList.remove('value-changed'), 400);
   }
-  refreshScoreBadge(); renderScoreRings();
+
+  if (g && isCaloriesGoal(g)) updateCalorieFeedback(gid, cur);
+
+  refreshScoreBadge(); renderScoreRings(); renderMotivation();
 }
 
-function getStep(g) {
-  if (!g) return 1;
-  if (g.unit === 'L' || g.unit === 'hrs') return 0.5;
-  if (g.unit === 'min') return 5;
-  if (g.unit === 'kcal' || g.unit === 'steps') return 100;
-  return 1;
+function handleManualInput(gid, gname, target, inputEl) {
+  if (isDateLocked(state.currentDate)) { inputEl.value = state.today[gname] || 0; return; }
+
+  const raw = inputEl.value.trim();
+  if (raw === '' || raw === '-') return; // mid-typing — don't update yet
+
+  let val = parseFloat(raw);
+  if (isNaN(val) || val < 0) { val = 0; inputEl.value = 0; }
+
+  state.today[gname] = val;
+
+  const g   = state.goals.find(x => x.id === gid);
+  const pct = Math.min(100, Math.round((val / (target || 1)) * 100));
+  const card = el('card-' + gid);
+  if (card) {
+    card.classList.toggle('done', pct >= 100);
+    const bar = el('bar-' + gid);
+    if (bar) bar.style.width = pct + '%';
+    const tgt = el('tgt-' + gid);
+    if (tgt) tgt.textContent = 'Target: ' + target + ' ' + (g?.unit || '') + ' · ' + pct + '%';
+    card.classList.add('value-changed');
+    setTimeout(() => card.classList.remove('value-changed'), 400);
+  }
+
+  if (g && isCaloriesGoal(g)) updateCalorieFeedback(gid, val);
+
+  refreshScoreBadge(); renderScoreRings(); renderMotivation();
 }
 
 /* ─── Submit Day ─────────────────────────────────────────────────── */
@@ -335,7 +444,7 @@ async function submitDay() {
     showToast('This date is locked — edits older than 7 days are not allowed.', 'error'); return;
   }
   const btn = el('submit-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
   const sc = computeScores(state.today, state.goals, state.categories);
   const data = {
     date: state.currentDate, ...state.today,
@@ -349,17 +458,17 @@ async function submitDay() {
     if (idx >= 0) state.history[idx] = rec; else state.history.push(rec);
     state.streaks = computeStreaks(state.history, state.goals);
     renderStreakBadges();
-    showToast('✅ Saved to Google Sheets!', 'success');
+    showToast('Saved to Google Sheets!', 'success');
     renderDashboard();
   } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
-  finally { if (btn) { btn.disabled = false; btn.textContent = '💾 Save Today'; } }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Save Today'; } }
 }
 
 /* ─── Date Navigation ────────────────────────────────────────────── */
 async function changeDate(delta) {
   const nd = addDays(state.currentDate, delta);
   if (nd > todayStr()) return;
-  showLoading(true, 'Loading…');
+  showLoading(true, 'Loading...');
   await loadDateData(nd);
   renderDashboard();
   showLoading(false);
@@ -379,25 +488,77 @@ function renderStreakBadges() {
     : '<span style="color:var(--muted);font-size:13px">Track habits daily to build streaks 🔥</span>';
 }
 
-/* ─── Motivation ─────────────────────────────────────────────────── */
+/* ─── Motivation Engine ──────────────────────────────────────────── */
 function renderMotivation() {
   const c = el('motivation-text'); if (!c) return;
-  const sc = computeScores(state.today, state.goals, state.categories);
-  const hr = new Date().getHours();
+  const sc   = computeScores(state.today, state.goals, state.categories);
+  const hr   = new Date().getHours();
   const name = (state.user?.name || 'there').split(' ')[0];
   const msgs = [];
-  if (hr < 12)       msgs.push('Good morning, ' + name + '! Let\'s crush today 🌅');
-  else if (hr < 17)  msgs.push('Keep pushing, ' + name + '! Great afternoon energy 💪');
-  else               msgs.push('Evening check-in, ' + name + '. How did today go? 🌙');
-  if (sc.daily >= 90)      msgs.push('🏆 Outstanding! You\'re in elite territory!');
-  else if (sc.daily >= 70) msgs.push('💚 Solid progress — stay consistent!');
-  else if (sc.daily >= 40) msgs.push('⚡ Good start — a few more habits will level you up!');
-  else if (sc.daily > 0)   msgs.push('🌱 Every step counts. Keep going!');
-  else                     msgs.push('Log your habits below and watch your score grow 📊');
+
+  /* Time-based greeting */
+  if (hr < 12)      msgs.push('Good morning, ' + name + '! Let\'s crush today 🌅');
+  else if (hr < 17) msgs.push('Keep pushing, ' + name + '! Great afternoon energy 💪');
+  else              msgs.push('Evening check-in, ' + name + '. How did today go? 🌙');
+
+  /* Walking / Steps */
+  const walkGoal = state.goals.find(g => g.enabled !== false && isStepsGoal(g));
+  if (walkGoal) {
+    const steps  = parseFloat(state.today[walkGoal.name]) || 0;
+    const target = walkGoal.target || 10000;
+    const ratio  = steps / target;
+    const left   = Math.max(0, Math.round(target - steps)).toLocaleString();
+    if (steps === 0)
+      msgs.push('🚶 Every journey begins with a single step. Start your walk and build momentum today!');
+    else if (ratio < 0.4)
+      msgs.push('🚶 You\'re getting started — every step counts. Try a short walk to build momentum.');
+    else if (ratio < 0.75)
+      msgs.push('🚶 Good progress on steps! Keep moving — you\'re well on your way to the target.');
+    else if (ratio < 1.0)
+      msgs.push('💪 Almost there! Just ' + left + ' more steps to hit your walking goal today!');
+    else
+      msgs.push('🏆 Amazing! You hit your ' + target.toLocaleString() + '-step goal today. Incredible work!');
+  }
+
+  /* Protein */
+  const protGoal = state.goals.find(g => g.enabled !== false && isProteinGoal(g));
+  if (protGoal) {
+    const p      = parseFloat(state.today[protGoal.name]) || 0;
+    const target = protGoal.target || 90;
+    const ratio  = p / target;
+    if (p === 0)
+      msgs.push('🥗 Don\'t forget your protein! Add a protein-rich meal or snack to support muscle recovery.');
+    else if (ratio < 0.5)
+      msgs.push('🥗 Consider adding a protein-rich snack or meal to support muscle recovery and overall health.');
+    else if (ratio < 1.0)
+      msgs.push('💪 Good protein progress! A little more and you\'ll hit your goal for today.');
+    else
+      msgs.push('💪 Excellent! You\'ve met your protein goal for today. Your muscles will thank you!');
+  }
+
+  /* Calories */
+  const calGoal = state.goals.find(g => g.enabled !== false && isCaloriesGoal(g));
+  if (calGoal) {
+    const cal = parseFloat(state.today[calGoal.name]) || 0;
+    if (cal > 0) {
+      const { msg } = getCalorieFeedback(cal);
+      if (msg) msgs.push(msg);
+    }
+  }
+
+  /* Overall daily score */
+  if (sc.daily >= 90)      msgs.push('🏆 Outstanding performance today! You\'re in elite territory!');
+  else if (sc.daily >= 70) msgs.push('💚 Solid progress — stay consistent and you\'ll hit all your goals!');
+  else if (sc.daily >= 40) msgs.push('⚡ Good start — a few more habits completed will level you up!');
+  else if (sc.daily > 0)   msgs.push('🌱 Every step counts. Keep going — you\'ve got this!');
+  else                     msgs.push('Log your habits below and watch your score climb 📊');
+
+  /* Streak highlight */
   const mx = Math.max(0, ...Object.values(state.streaks));
-  if (mx >= 7)      msgs.push('🔥 ' + mx + '-day streak! Incredible consistency!');
+  if (mx >= 7)      msgs.push('🔥 ' + mx + '-day streak! Incredible consistency — keep the fire going!');
   else if (mx >= 3) msgs.push('🔥 ' + mx + '-day streak — keep it alive!');
-  c.innerHTML = msgs.map(m => `<p>${m}</p>`).join('');
+
+  c.innerHTML = msgs.slice(0, 3).map(m => `<p>${m}</p>`).join('');
 }
 
 /* ─── Settings ───────────────────────────────────────────────────── */
@@ -552,11 +713,11 @@ async function saveScriptUrl() {
   const url = el('script-url')?.value.trim() || '';
   API.setUrl(url);
   if (url) {
-    showToast('URL saved — redirecting to login…', 'success');
+    showToast('URL saved — redirecting to login...', 'success');
     setTimeout(() => { window.location.href = 'login.html'; }, 1000);
   } else {
     API.clearAuth();
-    showToast('Disconnected. Redirecting…', 'success');
+    showToast('Disconnected. Redirecting...', 'success');
     setTimeout(() => { window.location.href = 'login.html'; }, 1000);
   }
 }
@@ -564,7 +725,7 @@ async function saveScriptUrl() {
 async function verifySheetConnection() {
   try {
     const d = await API.sheetVerify();
-    showToast(d.connected ? '✅ Sheet connected!' : '❌ Sheet tab not found', d.connected ? 'success' : 'error');
+    showToast(d.connected ? 'Sheet connected!' : 'Sheet tab not found', d.connected ? 'success' : 'error');
   } catch(e) { showToast(e.message, 'error'); }
 }
 
@@ -646,13 +807,15 @@ function toggleTheme() {
 }
 
 /* ─── UI Helpers ─────────────────────────────────────────────────── */
-function showLoading(on, msg = 'Loading…') {
+function showLoading(on, msg) {
+  msg = msg || 'Loading...';
   const ov = el('loading-overlay'); if (!ov) return;
   ov.style.display = on ? 'flex' : 'none';
   const t = ov.querySelector('.loading-msg'); if (t) t.textContent = msg;
 }
 
-function showToast(msg, type = 'info') {
+function showToast(msg, type) {
+  type = type || 'info';
   const t = document.createElement('div');
   t.className = 'toast toast-' + type; t.textContent = msg;
   document.body.appendChild(t);
