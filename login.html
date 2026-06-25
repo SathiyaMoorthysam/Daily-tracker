@@ -139,27 +139,21 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 <script>
 /* ─── Init ─────────────────────────────────────────────────── */
 (function init() {
+  // URL is hardcoded — always hide setup screen, show auth panel
+  document.getElementById('url-setup').style.display = 'none';
+  document.getElementById('auth-panel').style.display = 'block';
+
   // Redirect if already logged in
   if (API.getToken()) {
     API.verify().then(() => { window.location.href = 'index.html'; }).catch(() => { API.clearAuth(); });
   }
 
-  // Show URL setup or auth panel
-  if (!API.getUrl()) {
-    document.getElementById('url-setup').style.display = 'block';
-    document.getElementById('auth-panel').style.display = 'none';
-  } else {
-    document.getElementById('url-setup').style.display = 'none';
-    document.getElementById('auth-panel').style.display = 'block';
-  }
-
   // Allow Enter key to submit
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
-    if (document.getElementById('url-setup').style.display !== 'none') { saveUrl(); return; }
     const active = document.querySelector('.tab.active').id;
-    if (active === 'tab-login')    doLogin();
-    else                           doRegister();
+    if (active === 'tab-login') doLogin();
+    else                        doRegister();
   });
 })();
 

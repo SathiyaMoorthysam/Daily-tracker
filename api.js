@@ -10,7 +10,9 @@ const API = (() => {
   const KEY_TOKEN = 'habitos-token';
   const KEY_USER  = 'habitos-user';
 
-  const getUrl   = () => localStorage.getItem(KEY_URL)   || '';
+  /* Hardcoded backend URL — users never need to configure this */
+  const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCndXHE39E799LqZM-sn9_rGeiE2-U6435t5fsWU32e5Ols4x6o8nY04w4B5-7IEKuig/exec';
+  const getUrl   = () => localStorage.getItem(KEY_URL) || DEFAULT_SCRIPT_URL;
   const getToken = () => localStorage.getItem(KEY_TOKEN)  || '';
   const getUser  = () => { try { return JSON.parse(localStorage.getItem(KEY_USER)||'null'); } catch(_){ return null; } };
   const setToken = t  => localStorage.setItem(KEY_TOKEN, t);
