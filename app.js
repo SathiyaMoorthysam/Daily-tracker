@@ -1,10 +1,10 @@
-/* ═══════════════════════════════════════════════════════════════════
-   HabitOS v2 — app.js  (Production · Online-only · Multi-user)
+/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+   HabitOS v2 â app.js  (Production Â· Online-only Â· Multi-user)
    Backend: Google Apps Script + Google Sheets
    Auth:    Token-based (token stored in localStorage, data in Sheets)
-═══════════════════════════════════════════════════════════════════ */
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 
-/* ─── State ──────────────────────────────────────────────────────── */
+/* âââ State ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 const state = {
   user      : null,
   goals     : [],
@@ -19,11 +19,11 @@ const state = {
   calMonth  : new Date().getMonth(),  // 0-indexed
 };
 
-/* ─── DOM helpers ────────────────────────────────────────────────── */
+/* âââ DOM helpers ââââââââââââââââââââââââââââââââââââââââââââââââââ */
 const el  = id => document.getElementById(id);
 const qsa = s  => [...document.querySelectorAll(s)];
 
-/* ─── Date helpers ───────────────────────────────────────────────── */
+/* âââ Date helpers âââââââââââââââââââââââââââââââââââââââââââââââââ */
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -37,7 +37,7 @@ function addDays(s, n) {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-/* ─── 7-Day Edit Lock ────────────────────────────────────────────── */
+/* âââ 7-Day Edit Lock ââââââââââââââââââââââââââââââââââââââââââââââ */
 function isDateLocked(s) {
   const c = new Date(); c.setDate(c.getDate() - 6);
   return new Date(s + 'T00:00:00') < c;
@@ -55,7 +55,7 @@ function updateLockState() {
   if (nsb && locked) { nsb.style.display = 'none'; }
 }
 
-/* ─── Score Engine ───────────────────────────────────────────────── */
+/* âââ Score Engine âââââââââââââââââââââââââââââââââââââââââââââââââ */
 function computeScores(data, goals, categories) {
   const wt = {};
   categories.forEach(c => { wt[c.name] = c.weight || 10; });
@@ -90,19 +90,32 @@ function computeStreaks(history, goals) {
   return st;
 }
 
-/* ─── Auth ───────────────────────────────────────────────────────── */
+/* âââ Auth âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 async function checkAuth() {
-  if (!API.getUrl())   { window.location.href = 'login.html'; return false; }
-  if (!API.getToken()) { window.location.href = 'login.html'; return false; }
-  try {
-    const d = await API.verify();
-    state.user = d.user; API.setUser(d.user); return true;
-  } catch(_) {
-    API.clearAuth(); window.location.href = 'login.html'; return false;
-  }
+  // Wait for Firebase to resolve the auth state (fires once on page load).
+  return new Promise((resolve) => {
+    const unsub = API.onAuthChange(async (firebaseUser) => {
+      unsub(); // only need the first event
+      if (!firebaseUser) {
+        window.location.href = 'login.html';
+        resolve(false);
+        return;
+      }
+      try {
+        const d = await API.verify();
+        state.user = d.user;
+        API.setUser(d.user);
+        resolve(true);
+      } catch(_) {
+        API.clearAuth();
+        window.location.href = 'login.html';
+        resolve(false);
+      }
+    });
+  });
 }
 
-/* ─── Init ───────────────────────────────────────────────────────── */
+/* âââ Init âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 async function init() {
   restoreTheme();
   state.currentDate = todayStr();
@@ -115,7 +128,7 @@ async function init() {
   await loadAllData();
 }
 
-/* ─── Data ───────────────────────────────────────────────────────── */
+/* âââ Data âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 async function loadAllData() {
   showLoading(true, 'Loading today\'s progress...');
   try {
@@ -138,11 +151,11 @@ async function loadAllData() {
     const sc   = computeScores(state.today, state.goals, state.categories);
     const name = (state.user?.name || 'there').split(' ')[0];
     if (sc.daily > 0) {
-      showToast(`Welcome back, ${name}! You've completed ${sc.daily}% of today's goals 🎯`, 'success');
+      showToast(`Welcome back, ${name}! You've completed ${sc.daily}% of today's goals ð¯`, 'success');
     } else {
       const hr = new Date().getHours();
       const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
-      showToast(`${greet}, ${name}! Ready to crush today? 💪`, 'info');
+      showToast(`${greet}, ${name}! Ready to crush today? ðª`, 'info');
     }
   } catch(e) {
     showLoading(false);
@@ -152,7 +165,7 @@ async function loadAllData() {
 
 async function loadDateData(dateStr) {
   state.currentDate = dateStr;
-  // Always fetch fresh from API for today — ensures latest saved data is shown
+  // Always fetch fresh from API for today â ensures latest saved data is shown
   // on any device/browser without stale cache issues.
   // For past dates, use the deduplicated history cache (avoids extra API calls).
   if (dateStr !== todayStr()) {
@@ -180,7 +193,7 @@ function showApiError(msg) {
   if (rings) rings.innerHTML = '';
 }
 
-/* ─── Dashboard ──────────────────────────────────────────────────── */
+/* âââ Dashboard ââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 function renderDashboard() {
   renderScoreRings();
   renderHabitCards();
@@ -218,7 +231,7 @@ function refreshScoreBadge() {
   const b = el('score-badge'); if (b) b.textContent = sc.daily + '%';
 }
 
-/* ─── Score Rings ────────────────────────────────────────────────── */
+/* âââ Score Rings ââââââââââââââââââââââââââââââââââââââââââââââââââ */
 function renderScoreRings() {
   const c = el('score-rings'); if (!c) return;
   if (!state.goals.length) { c.innerHTML = ''; return; }
@@ -245,7 +258,7 @@ function renderScoreRings() {
     </div>`).join('');
 }
 
-/* ─── Goal type helpers ──────────────────────────────────────────── */
+/* âââ Goal type helpers ââââââââââââââââââââââââââââââââââââââââââââ */
 function isCaloriesGoal(g) {
   return g.id === 'calories' || g.unit === 'kcal';
 }
@@ -257,7 +270,7 @@ function isProteinGoal(g) {
   return (g.unit === 'g' && (id === 'protein' || id.includes('protein')));
 }
 
-/* ─── Step sizes ─────────────────────────────────────────────────── */
+/* âââ Step sizes âââââââââââââââââââââââââââââââââââââââââââââââââââ */
 function getStep(g) {
   if (!g) return 1;
   if (isStepsGoal(g))    return 500;    // Walking: 500 steps per click
@@ -268,7 +281,7 @@ function getStep(g) {
   return 1;
 }
 
-/* ─── Calorie Feedback ───────────────────────────────────────────── */
+/* âââ Calorie Feedback âââââââââââââââââââââââââââââââââââââââââââââ */
 const CAL_MSGS = {
   low: [
     "Your calorie intake is quite low today. Make sure you're eating enough nutritious food to fuel your body and support recovery.",
@@ -297,12 +310,12 @@ function getCalorieFeedback(calories) {
   const cal = parseFloat(calories) || 0;
   if (cal <= 0) return { msg: '', cls: '' };
   const idx = Math.floor(cal / 100) % 5;
-  if (cal < 1200)  return { msg: '⚠️ ' + CAL_MSGS.low[idx  % CAL_MSGS.low.length],  cls: 'low'  };
-  if (cal <= 1600) return { msg: '✅ ' + CAL_MSGS.good[idx % CAL_MSGS.good.length], cls: 'good' };
-  return               { msg: '🔥 ' + CAL_MSGS.high[idx % CAL_MSGS.high.length], cls: 'high' };
+  if (cal < 1200)  return { msg: 'â ï¸ ' + CAL_MSGS.low[idx  % CAL_MSGS.low.length],  cls: 'low'  };
+  if (cal <= 1600) return { msg: 'â ' + CAL_MSGS.good[idx % CAL_MSGS.good.length], cls: 'good' };
+  return               { msg: 'ð¥ ' + CAL_MSGS.high[idx % CAL_MSGS.high.length], cls: 'high' };
 }
 
-/* Debounced calorie toast — fires 2.5 s after the last adjustment */
+/* Debounced calorie toast â fires 2.5 s after the last adjustment */
 let _calToastTimer = null;
 function scheduleCalorieFeedback(calories) {
   clearTimeout(_calToastTimer);
@@ -316,13 +329,13 @@ function scheduleCalorieFeedback(calories) {
   }, 2500);
 }
 
-/* ─── Habit Cards ────────────────────────────────────────────────── */
+/* âââ Habit Cards ââââââââââââââââââââââââââââââââââââââââââââââââââ */
 function renderHabitCards() {
   const c = el('habit-sections'); if (!c) return;
   const en = state.goals.filter(g => g.enabled !== false);
   if (!en.length) {
     c.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--muted)">
-      <div style="font-size:40px;margin-bottom:12px">🎯</div>
+      <div style="font-size:40px;margin-bottom:12px">ð¯</div>
       <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">No habits yet</div>
       <div style="font-size:14px">Go to <strong>Settings &rarr; Goal Manager</strong> to add habits.</div>
     </div>`; return;
@@ -333,7 +346,7 @@ function renderHabitCards() {
     const cf = state.categories.find(x => x.name === cat) || {};
     return `<div class="cat-section">
       <div class="cat-header">
-        <span class="cat-icon">${cf.icon || '📌'}</span>
+        <span class="cat-icon">${cf.icon || 'ð'}</span>
         <span class="cat-name">${cat}</span>
         <span class="cat-weight">${cf.weight || 0}%</span>
       </div>
@@ -351,8 +364,8 @@ function renderCard(g) {
     const ch = parseFloat(val) >= 1;
     return `<div class="habit-card ${ch ? 'done' : ''}" id="card-${g.id}">
       <div class="habit-top">
-        <span class="habit-icon">${g.icon || '✅'}</span>
-        ${streak > 0 ? `<span class="streak-pip">${streak}🔥</span>` : ''}
+        <span class="habit-icon">${g.icon || 'â'}</span>
+        ${streak > 0 ? `<span class="streak-pip">${streak}ð¥</span>` : ''}
       </div>
       <div class="habit-name">${g.name}</div>
       <label class="toggle">
@@ -369,11 +382,11 @@ function renderCard(g) {
   const step = getStep(g);
 
   return `<div class="habit-card qty-card ${pct >= 100 ? 'done' : ''}" id="card-${g.id}">
-    <button class="qty-edge-btn minus-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},-1)" ${locked ? 'disabled' : ''}>−</button>
+    <button class="qty-edge-btn minus-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},-1)" ${locked ? 'disabled' : ''}>â</button>
     <div class="card-body">
       <div class="habit-top">
-        <span class="habit-icon">${g.icon || '📊'}</span>
-        ${streak > 0 ? `<span class="streak-pip">${streak}🔥</span>` : ''}
+        <span class="habit-icon">${g.icon || 'ð'}</span>
+        ${streak > 0 ? `<span class="streak-pip">${streak}ð¥</span>` : ''}
       </div>
       <div class="habit-name">${g.name}</div>
       <div class="qty-center">
@@ -394,13 +407,13 @@ function renderCard(g) {
       <div class="habit-bar">
         <div class="habit-bar-fill" id="bar-${g.id}" style="width:${pct}%;background:${g.color || '#6366f1'}"></div>
       </div>
-      <div class="habit-target" id="tgt-${g.id}">Target: ${g.target} ${g.unit || ''} · ${pct}%</div>
+      <div class="habit-target" id="tgt-${g.id}">Target: ${g.target} ${g.unit || ''} Â· ${pct}%</div>
     </div>
     <button class="qty-edge-btn plus-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},1)" ${locked ? 'disabled' : ''}>+</button>
   </div>`;
 }
 
-/* ─── Input Handlers ─────────────────────────────────────────────── */
+/* âââ Input Handlers âââââââââââââââââââââââââââââââââââââââââââââââ */
 function toggleBoolean(gid, gn, ch) {
   if (isDateLocked(state.currentDate)) return;
   state.today[gn] = ch ? 1 : 0;
@@ -428,7 +441,7 @@ function adjustHabit(gid, gn, target, delta) {
     const bar = el('bar-' + gid);
     if (bar) bar.style.width = pct + '%';
     const tgt = el('tgt-' + gid);
-    if (tgt) tgt.textContent = 'Target: ' + target + ' ' + (g?.unit || '') + ' · ' + pct + '%';
+    if (tgt) tgt.textContent = 'Target: ' + target + ' ' + (g?.unit || '') + ' Â· ' + pct + '%';
     // Animate
     card.classList.add('value-changed');
     setTimeout(() => card.classList.remove('value-changed'), 400);
@@ -443,7 +456,7 @@ function handleManualInput(gid, gname, target, inputEl) {
   if (isDateLocked(state.currentDate)) { inputEl.value = state.today[gname] || 0; return; }
 
   const raw = inputEl.value.trim();
-  if (raw === '' || raw === '-') return; // mid-typing — don't update yet
+  if (raw === '' || raw === '-') return; // mid-typing â don't update yet
 
   let val = parseFloat(raw);
   if (isNaN(val) || val < 0) { val = 0; inputEl.value = 0; }
@@ -458,7 +471,7 @@ function handleManualInput(gid, gname, target, inputEl) {
     const bar = el('bar-' + gid);
     if (bar) bar.style.width = pct + '%';
     const tgt = el('tgt-' + gid);
-    if (tgt) tgt.textContent = 'Target: ' + target + ' ' + (g?.unit || '') + ' · ' + pct + '%';
+    if (tgt) tgt.textContent = 'Target: ' + target + ' ' + (g?.unit || '') + ' Â· ' + pct + '%';
     card.classList.add('value-changed');
     setTimeout(() => card.classList.remove('value-changed'), 400);
   }
@@ -468,10 +481,10 @@ function handleManualInput(gid, gname, target, inputEl) {
   refreshScoreBadge(); renderScoreRings(); renderMotivation();
 }
 
-/* ─── Submit Day ─────────────────────────────────────────────────── */
+/* âââ Submit Day âââââââââââââââââââââââââââââââââââââââââââââââââââ */
 async function submitDay() {
   if (isDateLocked(state.currentDate)) {
-    showToast('This date is locked — edits older than 7 days are not allowed.', 'error'); return;
+    showToast('This date is locked â edits older than 7 days are not allowed.', 'error'); return;
   }
   clearTimeout(_autoSaveTimer); // cancel pending auto-save to prevent double-save
   const btn = el('submit-btn');
@@ -493,10 +506,10 @@ async function submitDay() {
     showToast('Saved to Google Sheets!', 'success');
     renderDashboard();
   } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
-  finally { if (btn) { btn.disabled = false; btn.textContent = '💾 Save Today'; } }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'ð¾ Save Today'; } }
 }
 
-/* ─── Date Navigation ────────────────────────────────────────────── */
+/* âââ Date Navigation ââââââââââââââââââââââââââââââââââââââââââââââ */
 async function changeDate(delta) {
   const nd = addDays(state.currentDate, delta);
   if (nd > todayStr()) return;
@@ -507,7 +520,7 @@ async function changeDate(delta) {
   showLoading(false);
 }
 
-/* ─── Streak Badges ──────────────────────────────────────────────── */
+/* âââ Streak Badges ââââââââââââââââââââââââââââââââââââââââââââââââ */
 function renderStreakBadges() {
   const c = el('streak-badges'); if (!c) return;
   const top = state.goals
@@ -516,12 +529,12 @@ function renderStreakBadges() {
     .slice(0, 6);
   c.innerHTML = top.length
     ? top.map(g => `<div class="streak-badge" title="${g.name}">
-        <span>${g.icon || '⭐'}</span><span class="streak-days">${state.streaks[g.id]}d</span>
+        <span>${g.icon || 'â­'}</span><span class="streak-days">${state.streaks[g.id]}d</span>
       </div>`).join('')
-    : '<span style="color:var(--muted);font-size:13px">Track habits daily to build streaks 🔥</span>';
+    : '<span style="color:var(--muted);font-size:13px">Track habits daily to build streaks ð¥</span>';
 }
 
-/* ─── Motivation Engine ──────────────────────────────────────────── */
+/* âââ Motivation Engine ââââââââââââââââââââââââââââââââââââââââââââ */
 function renderMotivation() {
   const c = el('motivation-text'); if (!c) return;
   const sc   = computeScores(state.today, state.goals, state.categories);
@@ -530,9 +543,9 @@ function renderMotivation() {
   const msgs = [];
 
   /* Time-based greeting */
-  if (hr < 12)      msgs.push('Good morning, ' + name + '! Let\'s crush today 🌅');
-  else if (hr < 17) msgs.push('Keep pushing, ' + name + '! Great afternoon energy 💪');
-  else              msgs.push('Evening check-in, ' + name + '. How did today go? 🌙');
+  if (hr < 12)      msgs.push('Good morning, ' + name + '! Let\'s crush today ð');
+  else if (hr < 17) msgs.push('Keep pushing, ' + name + '! Great afternoon energy ðª');
+  else              msgs.push('Evening check-in, ' + name + '. How did today go? ð');
 
   /* Walking / Steps */
   const walkGoal = state.goals.find(g => g.enabled !== false && isStepsGoal(g));
@@ -542,15 +555,15 @@ function renderMotivation() {
     const ratio  = steps / target;
     const left   = Math.max(0, Math.round(target - steps)).toLocaleString();
     if (steps === 0)
-      msgs.push('🚶 Every journey begins with a single step. Start your walk and build momentum today!');
+      msgs.push('ð¶ Every journey begins with a single step. Start your walk and build momentum today!');
     else if (ratio < 0.4)
-      msgs.push('🚶 You\'re getting started — every step counts. Try a short walk to build momentum.');
+      msgs.push('ð¶ You\'re getting started â every step counts. Try a short walk to build momentum.');
     else if (ratio < 0.75)
-      msgs.push('🚶 Good progress on steps! Keep moving — you\'re well on your way to the target.');
+      msgs.push('ð¶ Good progress on steps! Keep moving â you\'re well on your way to the target.');
     else if (ratio < 1.0)
-      msgs.push('💪 Almost there! Just ' + left + ' more steps to hit your walking goal today!');
+      msgs.push('ðª Almost there! Just ' + left + ' more steps to hit your walking goal today!');
     else
-      msgs.push('🏆 Amazing! You hit your ' + target.toLocaleString() + '-step goal today. Incredible work!');
+      msgs.push('ð Amazing! You hit your ' + target.toLocaleString() + '-step goal today. Incredible work!');
   }
 
   /* Protein */
@@ -560,13 +573,13 @@ function renderMotivation() {
     const target = protGoal.target || 90;
     const ratio  = p / target;
     if (p === 0)
-      msgs.push('🥗 Don\'t forget your protein! Add a protein-rich meal or snack to support muscle recovery.');
+      msgs.push('ð¥ Don\'t forget your protein! Add a protein-rich meal or snack to support muscle recovery.');
     else if (ratio < 0.5)
-      msgs.push('🥗 Consider adding a protein-rich snack or meal to support muscle recovery and overall health.');
+      msgs.push('ð¥ Consider adding a protein-rich snack or meal to support muscle recovery and overall health.');
     else if (ratio < 1.0)
-      msgs.push('💪 Good protein progress! A little more and you\'ll hit your goal for today.');
+      msgs.push('ðª Good protein progress! A little more and you\'ll hit your goal for today.');
     else
-      msgs.push('💪 Excellent! You\'ve met your protein goal for today. Your muscles will thank you!');
+      msgs.push('ðª Excellent! You\'ve met your protein goal for today. Your muscles will thank you!');
   }
 
   /* Calories */
@@ -580,21 +593,21 @@ function renderMotivation() {
   }
 
   /* Overall daily score */
-  if (sc.daily >= 90)      msgs.push('🏆 Outstanding performance today! You\'re in elite territory!');
-  else if (sc.daily >= 70) msgs.push('💚 Solid progress — stay consistent and you\'ll hit all your goals!');
-  else if (sc.daily >= 40) msgs.push('⚡ Good start — a few more habits completed will level you up!');
-  else if (sc.daily > 0)   msgs.push('🌱 Every step counts. Keep going — you\'ve got this!');
-  else                     msgs.push('Log your habits below and watch your score climb 📊');
+  if (sc.daily >= 90)      msgs.push('ð Outstanding performance today! You\'re in elite territory!');
+  else if (sc.daily >= 70) msgs.push('ð Solid progress â stay consistent and you\'ll hit all your goals!');
+  else if (sc.daily >= 40) msgs.push('â¡ Good start â a few more habits completed will level you up!');
+  else if (sc.daily > 0)   msgs.push('ð± Every step counts. Keep going â you\'ve got this!');
+  else                     msgs.push('Log your habits below and watch your score climb ð');
 
   /* Streak highlight */
   const mx = Math.max(0, ...Object.values(state.streaks));
-  if (mx >= 7)      msgs.push('🔥 ' + mx + '-day streak! Incredible consistency — keep the fire going!');
-  else if (mx >= 3) msgs.push('🔥 ' + mx + '-day streak — keep it alive!');
+  if (mx >= 7)      msgs.push('ð¥ ' + mx + '-day streak! Incredible consistency â keep the fire going!');
+  else if (mx >= 3) msgs.push('ð¥ ' + mx + '-day streak â keep it alive!');
 
   c.innerHTML = msgs.slice(0, 3).map(m => `<p>${m}</p>`).join('');
 }
 
-/* ─── Settings ───────────────────────────────────────────────────── */
+/* âââ Settings âââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 async function loadSettings() {
   const pn = el('prof-name'); if (pn) pn.value = state.user?.name || '';
   const pe = el('prof-email'); if (pe) pe.value = state.user?.email || '';
@@ -612,7 +625,7 @@ function renderCategoryManager() {
   const c = el('cat-list'); if (!c) return;
   c.innerHTML = state.categories.map((cat, i) => `
     <div class="cat-item">
-      <span class="cat-item-icon">${cat.icon || '📌'}</span>
+      <span class="cat-item-icon">${cat.icon || 'ð'}</span>
       <input class="cat-item-name" value="${cat.name}" onchange="updateCategory(${i},'name',this.value)"/>
       <input type="number" class="cat-item-weight" value="${cat.weight}" min="0" max="100"
         onchange="updateCategory(${i},'weight',+this.value)"/>
@@ -626,7 +639,7 @@ async function saveCategories() {
   catch(e) { showToast(e.message, 'error'); }
 }
 async function addCategory() {
-  state.categories.push({ name: 'New Category', weight: 5, color: '#6366f1', icon: '📌' });
+  state.categories.push({ name: 'New Category', weight: 5, color: '#6366f1', icon: 'ð' });
   renderCategoryManager();
 }
 
@@ -634,10 +647,10 @@ function renderGoalManager() {
   const c = el('goal-list'); if (!c) return;
   c.innerHTML = state.goals.map(g => `
     <div class="goal-item ${g.enabled === false ? 'disabled' : ''}" id="gitem-${g.id}">
-      <span class="goal-item-icon">${g.icon || '📊'}</span>
+      <span class="goal-item-icon">${g.icon || 'ð'}</span>
       <div class="goal-item-info">
         <strong>${g.name}</strong>
-        <small>${g.category} · ${g.type === 'boolean' ? 'Yes/No' : g.target + ' ' + g.unit}</small>
+        <small>${g.category} Â· ${g.type === 'boolean' ? 'Yes/No' : g.target + ' ' + g.unit}</small>
       </div>
       <div class="goal-item-actions">
         <label class="mini-toggle">
@@ -645,8 +658,8 @@ function renderGoalManager() {
             onchange="toggleGoal('${g.id}',this.checked)"/>
           <span class="mini-track"></span>
         </label>
-        <button class="icon-btn" onclick="editGoalModal('${g.id}')">✏️</button>
-        <button class="icon-btn danger" onclick="removeGoal('${g.id}')">🗑️</button>
+        <button class="icon-btn" onclick="editGoalModal('${g.id}')">âï¸</button>
+        <button class="icon-btn danger" onclick="removeGoal('${g.id}')">ðï¸</button>
       </div>
     </div>`).join('');
 }
@@ -672,7 +685,7 @@ function showAddGoalModal() {
   const sel = el('gm-cat');
   if (sel) sel.innerHTML = state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
   el('goal-modal').style.display = 'flex';
-  el('gm-id').value = ''; el('gm-name').value = ''; el('gm-icon').value = '📊';
+  el('gm-id').value = ''; el('gm-name').value = ''; el('gm-icon').value = 'ð';
   el('gm-type').value = 'quantity'; el('gm-target').value = '1'; el('gm-unit').value = '';
   if (sel && state.categories.length) sel.value = state.categories[0].name;
   el('gm-color').value = '#6366f1'; toggleGoalTypeFields();
@@ -683,7 +696,7 @@ function editGoalModal(gid) {
   const sel = el('gm-cat');
   if (sel) sel.innerHTML = state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
   el('goal-modal').style.display = 'flex';
-  el('gm-id').value = g.id; el('gm-name').value = g.name; el('gm-icon').value = g.icon || '📊';
+  el('gm-id').value = g.id; el('gm-name').value = g.name; el('gm-icon').value = g.icon || 'ð';
   el('gm-type').value = g.type || 'quantity'; el('gm-target').value = g.target || 1;
   el('gm-unit').value = g.unit || '';
   if (sel) sel.value = g.category; el('gm-color').value = g.color || '#6366f1';
@@ -700,7 +713,7 @@ async function saveGoalModal() {
   const id = el('gm-id').value; const name = el('gm-name').value.trim();
   if (!name) { showToast('Goal name required', 'error'); return; }
   const goal = {
-    name, icon: el('gm-icon').value.trim() || '📊', type: el('gm-type').value,
+    name, icon: el('gm-icon').value.trim() || 'ð', type: el('gm-type').value,
     target: parseFloat(el('gm-target').value) || 1, unit: el('gm-unit').value.trim(),
     category: el('gm-cat').value, color: el('gm-color').value, enabled: true
   };
@@ -718,13 +731,15 @@ async function saveGoalModal() {
   } catch(e) { showToast(e.message, 'error'); }
 }
 
-/* ─── Profile & Auth ─────────────────────────────────────────────── */
+/* âââ Profile & Auth âââââââââââââââââââââââââââââââââââââââââââââââ */
 async function saveProfile() {
   const name = el('prof-name')?.value.trim(); if (!name) { showToast('Name required', 'error'); return; }
   const email = el('prof-email')?.value.trim();
   try {
     const d = await API.updateProfile({ name, email });
-    state.user = d.user; API.setUser(d.user);
+    // updateProfile returns { ok, user } â merge into state
+    if (d.user) { state.user = d.user; API.setUser(d.user); }
+    else { if (state.user) state.user.name = name; API.setUser(state.user); }
     const un = el('user-name'); if (un) un.textContent = name;
     showToast('Profile updated!', 'success');
   } catch(e) { showToast(e.message, 'error'); }
@@ -746,7 +761,7 @@ async function saveScriptUrl() {
   const url = el('script-url')?.value.trim() || '';
   API.setUrl(url);
   if (url) {
-    showToast('URL saved — redirecting to login...', 'success');
+    showToast('URL saved â redirecting to login...', 'success');
     setTimeout(() => { window.location.href = 'login.html'; }, 1000);
   } else {
     API.clearAuth();
@@ -767,7 +782,7 @@ async function openSheet() {
   catch(e) { showToast(e.message, 'error'); }
 }
 
-/* ─── Admin ──────────────────────────────────────────────────────── */
+/* âââ Admin ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 async function loadAdminPanel() {
   try { const d = await API.adminUsers(); renderAdminUsers(d.users); }
   catch(e) { showToast(e.message, 'error'); }
@@ -779,7 +794,7 @@ function renderAdminUsers(users) {
     <div class="admin-user-row">
       <div class="admin-user-info">
         <strong>${u.name}</strong>
-        <small>${u.email} · ${u.role} · ${u.active ? '🟢 Active' : '🔴 Inactive'}</small>
+        <small>${u.email} Â· ${u.role} Â· ${u.active ? 'ð¢ Active' : 'ð´ Inactive'}</small>
       </div>
       <div class="admin-user-actions">
         ${u.id !== state.user.id ? `
@@ -798,10 +813,11 @@ async function adminToggleUser(uid, act) {
   } catch(e) { showToast(e.message, 'error'); }
 }
 async function adminResetPw(uid) {
-  const pw = prompt('New password (min 6 characters):');
-  if (!pw || pw.length < 6) { showToast('Password too short', 'error'); return; }
-  try { await API.adminResetPass(uid, pw); showToast('Password reset!', 'success'); }
-  catch(e) { showToast(e.message, 'error'); }
+  if (!confirm('Send a password reset email to this user?')) return;
+  try {
+    const d = await API.adminResetPass(uid);
+    showToast(d.msg || 'Password reset email sent!', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
 }
 async function adminDeleteUser(uid, name) {
   if (!confirm('Permanently delete "' + name + '"?')) return;
@@ -809,144 +825,15 @@ async function adminDeleteUser(uid, name) {
   catch(e) { showToast(e.message, 'error'); }
 }
 
-/* ─── Logout ─────────────────────────────────────────────────────── */
+/* âââ Logout âââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 async function logout() {
   try { await API.logout(); } catch(_) {}
   API.clearAuth(); window.location.href = 'login.html';
 }
 
-/* ─── Section Navigation ─────────────────────────────────────────── */
+/* âââ Section Navigation âââââââââââââââââââââââââââââââââââââââââââ */
 function showSection(name) {
   qsa('.section').forEach(s => s.style.display = 'none');
   qsa('.nav-btn').forEach(b => b.classList.remove('active'));
   const sec = el('sec-' + name); if (sec) sec.style.display = 'block';
-  const btn = el('nav-' + name); if (btn) btn.classList.add('active');
-  if (name === 'dashboard') renderDashboard();
-  if (name === 'analytics' && typeof initAnalytics === 'function')
-    initAnalytics(state.history, state.goals, state.categories);
-  if (name === 'settings') loadSettings();
-  if (name === 'admin') loadAdminPanel();
-}
-
-/* ─── Theme ──────────────────────────────────────────────────────── */
-function restoreTheme() {
-  const t = localStorage.getItem('habitos-theme') || 'dark';
-  state.theme = t; document.documentElement.setAttribute('data-theme', t);
-  const i = el('theme-icon'); if (i) i.textContent = t === 'dark' ? '☀️' : '🌙';
-}
-function toggleTheme() {
-  state.theme = state.theme === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('habitos-theme', state.theme); restoreTheme();
-}
-
-/* ─── UI Helpers ─────────────────────────────────────────────────── */
-function showLoading(on, msg) {
-  msg = msg || 'Loading...';
-  const ov = el('loading-overlay'); if (!ov) return;
-  ov.style.display = on ? 'flex' : 'none';
-  const t = ov.querySelector('.loading-msg'); if (t) t.textContent = msg;
-}
-
-function showToast(msg, type) {
-  type = type || 'info';
-  const t = document.createElement('div');
-  t.className = 'toast toast-' + type; t.textContent = msg;
-  document.body.appendChild(t);
-  requestAnimationFrame(() => t.classList.add('show'));
-  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
-}
-
-/* ─── Dirty State & Auto-Save ────────────────────────────────────── */
-let _autoSaveTimer = null;
-
-function markDirty() {
-  state.dirty = true;
-  const btn = el('nav-save-btn');
-  if (btn) btn.style.display = 'flex';
-  scheduleAutoSave();
-}
-function markClean() {
-  state.dirty = false;
-  clearTimeout(_autoSaveTimer);
-  const btn = el('nav-save-btn');
-  if (btn) btn.style.display = 'none';
-}
-
-/* Auto-save 3 seconds after the last change — keeps Sheets in sync */
-function scheduleAutoSave() {
-  clearTimeout(_autoSaveTimer);
-  _autoSaveTimer = setTimeout(async () => {
-    if (state.dirty && !isDateLocked(state.currentDate)) {
-      await submitDay();
-    }
-  }, 3000);
-}
-
-/* ─── Calendar Picker ────────────────────────────────────────────── */
-function openCalendar() {
-  const d = new Date(state.currentDate + 'T12:00:00');
-  state.calYear  = d.getFullYear();
-  state.calMonth = d.getMonth();
-  renderCalendar();
-  const ov = el('cal-overlay');
-  if (ov) ov.style.display = 'flex';
-}
-
-function closeCalendar() {
-  const ov = el('cal-overlay');
-  if (ov) ov.style.display = 'none';
-}
-
-function calShiftMonth(delta) {
-  state.calMonth += delta;
-  if (state.calMonth < 0)  { state.calMonth = 11; state.calYear--; }
-  if (state.calMonth > 11) { state.calMonth = 0;  state.calYear++; }
-  renderCalendar();
-}
-
-function renderCalendar() {
-  const lbl  = el('cal-month-label');
-  const grid = el('cal-grid');
-  if (!lbl || !grid) return;
-
-  const MONTHS = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
-  lbl.textContent = MONTHS[state.calMonth] + ' ' + state.calYear;
-
-  const dateDates  = new Set(state.history.map(r => r.Date).filter(Boolean));
-  const today      = todayStr();
-  const selDate    = state.currentDate;
-  const firstDay   = new Date(state.calYear, state.calMonth, 1).getDay();
-  const daysInMonth = new Date(state.calYear, state.calMonth + 1, 0).getDate();
-
-  let html = '';
-  for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
-  for (let d = 1; d <= daysInMonth; d++) {
-    const ds = state.calYear + '-' +
-      String(state.calMonth + 1).padStart(2, '0') + '-' +
-      String(d).padStart(2, '0');
-    const isFuture = ds > today;
-    let cls = 'cal-day';
-    if (isFuture)               cls += ' cal-future';
-    if (ds === today)           cls += ' cal-today';
-    if (ds === selDate)         cls += ' cal-selected';
-    if (dateDates.has(ds) && !isFuture) cls += ' cal-has-data';
-    const dot   = dateDates.has(ds) && !isFuture ? '<span class="cal-dot"></span>' : '';
-    const click = !isFuture ? `onclick="selectCalDate('${ds}')"` : '';
-    html += `<div class="${cls}" ${click}>${d}${dot}</div>`;
-  }
-  grid.innerHTML = html;
-}
-
-async function selectCalDate(dateStr) {
-  closeCalendar();
-  if (dateStr === state.currentDate) return;
-  markClean();
-  showLoading(true, 'Loading ' + fmtDate(dateStr) + '...');
-  await loadDateData(dateStr);
-  renderDashboard();
-  showLoading(false);
-}
-
-/* ─── Boot ───────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', init);
+  const btn = el('n
