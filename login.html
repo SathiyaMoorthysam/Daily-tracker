@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HabitOS — Sign In</title>
+<title>HabitOS â Sign In</title>
 <link rel="manifest" href="manifest.json"/>
 <style>
-/* ── Base ── */
+/* ââ Base ââ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#0f0e17;--surface:rgba(255,255,255,.06);--border:rgba(255,255,255,.1);
@@ -15,33 +15,33 @@
 }
 html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
   background:var(--bg);color:var(--text);overflow-x:hidden}
-/* ── BG animation ── */
+/* ââ BG animation ââ */
 body::before{content:'';position:fixed;inset:0;z-index:0;
   background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(99,102,241,.25),transparent),
              radial-gradient(ellipse 60% 50% at 80% 90%,rgba(139,92,246,.2),transparent);
   animation:bgPulse 8s ease-in-out infinite alternate}
 @keyframes bgPulse{to{opacity:.6}}
-/* ── Layout ── */
+/* ââ Layout ââ */
 .page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;
   align-items:center;justify-content:center;padding:24px}
-/* ── Card ── */
+/* ââ Card ââ */
 .card{width:100%;max-width:420px;background:var(--surface);
   backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));
   border:1px solid var(--border);border-radius:24px;padding:40px 36px;
   animation:slideUp .5s cubic-bezier(.16,1,.3,1)}
 @keyframes slideUp{from{opacity:0;transform:translateY(30px)}}
-/* ── Logo ── */
+/* ââ Logo ââ */
 .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;justify-content:center}
 .logo-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));
   border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
 .logo-text{font-size:24px;font-weight:800;background:linear-gradient(135deg,#818cf8,#c084fc);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent}
-/* ── Tabs ── */
+/* ââ Tabs ââ */
 .tabs{display:flex;background:rgba(0,0,0,.3);border-radius:12px;padding:4px;margin-bottom:28px}
 .tab{flex:1;padding:10px;border:none;background:none;color:var(--muted);cursor:pointer;
   border-radius:9px;font-size:14px;font-weight:600;transition:.2s}
 .tab.active{background:var(--accent);color:#fff}
-/* ── Form ── */
+/* ââ Form ââ */
 .field{margin-bottom:16px}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--muted);
   text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
@@ -49,115 +49,117 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
   border-radius:10px;color:var(--text);font-size:15px;outline:none;transition:.2s}
 .field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
 .field input::placeholder{color:var(--muted)}
-/* ── URL field ── */
-.url-row{display:flex;gap:8px}
-.url-row input{flex:1}
-.url-test-btn{padding:12px 14px;background:rgba(99,102,241,.2);border:1px solid var(--accent);
-  border-radius:10px;color:var(--accent);cursor:pointer;font-size:13px;white-space:nowrap;transition:.2s}
-.url-test-btn:hover{background:rgba(99,102,241,.3)}
-/* ── Button ── */
+/* ââ Buttons ââ */
 .btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;
   cursor:pointer;transition:.2s;margin-top:8px}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
 .btn-primary:disabled{opacity:.5;transform:none;cursor:not-allowed}
-/* ── Messages ── */
+/* ââ Google button ââ */
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:13px;border:1px solid var(--border);border-radius:12px;
+  background:rgba(255,255,255,.06);color:var(--text);font-size:14px;font-weight:600;
+  cursor:pointer;transition:.2s;margin-top:8px}
+.btn-google:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+.btn-google svg{width:18px;height:18px;flex-shrink:0}
+.btn-google:disabled{opacity:.5;cursor:not-allowed}
+/* ââ Divider ââ */
+.or-row{display:flex;align-items:center;gap:12px;margin:16px 0 8px;color:var(--muted);font-size:13px}
+.or-row::before,.or-row::after{content:'';flex:1;height:1px;background:var(--border)}
+/* ââ Messages ââ */
 .msg{padding:12px 16px;border-radius:10px;font-size:14px;margin-top:12px;display:none}
 .msg.error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
 .msg.success{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:#6ee7b7}
 .msg.show{display:block}
-/* ── Footer ── */
+/* ââ Footer ââ */
 .footer{margin-top:24px;text-align:center;font-size:13px;color:var(--muted)}
-/* ── Spinner ── */
+/* ââ Spinner ââ */
 .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
   border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
-/* ── URL info ── */
-.url-hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+/* ââ Loading overlay ââ */
+#auth-loading{position:fixed;inset:0;background:var(--bg);z-index:100;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.loading-ring{width:48px;height:48px;border:3px solid rgba(99,102,241,.3);
+  border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite}
 </style>
 </head>
 <body>
-<div class="page">
+
+<!-- Checking auth stateâ¦ -->
+<div id="auth-loading">
+  <div class="loading-ring"></div>
+  <div style="color:var(--muted);font-size:14px">Loading HabitOSâ¦</div>
+</div>
+
+<div class="page" id="main-page" style="display:none">
   <div class="card">
     <div class="logo">
-      <div class="logo-icon">⚡</div>
+      <div class="logo-icon">â¡</div>
       <div class="logo-text">HabitOS</div>
     </div>
 
-    <!-- URL Setup (shown when URL not set) -->
-    <div id="url-setup" style="display:none">
-      <div style="text-align:center;margin-bottom:20px">
-        <div style="font-size:18px;font-weight:700;margin-bottom:8px">First-time Setup</div>
-        <div style="font-size:14px;color:var(--muted)">Enter your Apps Script URL to connect HabitOS to Google Sheets</div>
-      </div>
-      <div class="field">
-        <label>Apps Script Web App URL</label>
-        <div class="url-row">
-          <input type="url" id="setup-url" placeholder="https://script.google.com/macros/s/..."/>
-          <button class="url-test-btn" onclick="testUrl()">Test</button>
-        </div>
-        <div class="url-hint">Deploy Code.gs as a Web App → set access to <strong>Anyone</strong> → paste the URL above</div>
-      </div>
-      <div id="url-msg" class="msg"></div>
-      <button class="btn btn-primary" onclick="saveUrl()">Continue →</button>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" id="tab-login"    onclick="switchTab('login')">Sign In</button>
+      <button class="tab"        id="tab-register" onclick="switchTab('register')">Register</button>
     </div>
 
-    <!-- Auth forms (shown after URL set) -->
-    <div id="auth-panel">
-      <div class="tabs">
-        <button class="tab active" id="tab-login"    onclick="switchTab('login')">Sign In</button>
-        <button class="tab"        id="tab-register" onclick="switchTab('register')">Register</button>
-      </div>
+    <!-- ââ Sign In ââ -->
+    <div id="form-login">
+      <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" autocomplete="current-password"/></div>
+      <div id="login-msg" class="msg"></div>
+      <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+      <div class="or-row">or</div>
+      <button class="btn-google" id="google-login-btn" onclick="doGoogleLogin()">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+    </div>
 
-      <!-- Login -->
-      <div id="form-login">
-        <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="you@example.com" autocomplete="email"/></div>
-        <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"/></div>
-        <div id="login-msg" class="msg"></div>
-        <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
-      </div>
-
-      <!-- Register -->
-      <div id="form-register" style="display:none">
-        <div class="field"><label>Full Name</label><input type="text" id="r-name" placeholder="Sathiya Moorthy" autocomplete="name"/></div>
-        <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" autocomplete="email"/></div>
-        <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Min 6 characters" autocomplete="new-password"/></div>
-        <div class="field"><label>Confirm Password</label><input type="password" id="r-pass2" placeholder="••••••••" autocomplete="new-password"/></div>
-        <div id="reg-msg" class="msg"></div>
-        <button class="btn btn-primary" id="reg-btn" onclick="doRegister()">Create Account</button>
-      </div>
+    <!-- ââ Register ââ -->
+    <div id="form-register" style="display:none">
+      <div class="field"><label>Full Name</label><input type="text" id="r-name" placeholder="Sathiya Moorthy" autocomplete="name"/></div>
+      <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Min 6 characters" autocomplete="new-password"/></div>
+      <div class="field"><label>Confirm Password</label><input type="password" id="r-pass2" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" autocomplete="new-password"/></div>
+      <div id="reg-msg" class="msg"></div>
+      <button class="btn btn-primary" id="reg-btn" onclick="doRegister()">Create Account</button>
+      <div class="or-row">or</div>
+      <button class="btn-google" id="google-reg-btn" onclick="doGoogleLogin()">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
     </div>
   </div>
 
   <div class="footer">
-    HabitOS v2 &nbsp;·&nbsp; Build better habits, every day.<br>
-    <small style="opacity:.5">Up to 5 users · 7-day edit lock · Google Sheets sync</small>
+    HabitOS v2 &nbsp;Â·&nbsp; Build better habits, every day.<br>
+    <small style="opacity:.5">Powered by Firebase Â· Secure Â· Private</small>
   </div>
 </div>
 
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="api.js"></script>
 <script>
-/* ─── Init ─────────────────────────────────────────────────── */
-(function init() {
-  // URL is hardcoded — always hide setup screen, show auth panel
-  document.getElementById('url-setup').style.display = 'none';
-  document.getElementById('auth-panel').style.display = 'block';
-
-  // Redirect if already logged in
-  if (API.getToken()) {
-    API.verify().then(() => { window.location.href = 'index.html'; }).catch(() => { API.clearAuth(); });
-  }
-
-  // Allow Enter key to submit
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    const active = document.querySelector('.tab.active').id;
-    if (active === 'tab-login') doLogin();
-    else                        doRegister();
+/* âââ Init: check if already signed in ââââââââââââââââââââââââ */
+(function() {
+  const unsub = API.onAuthChange(user => {
+    unsub();
+    if (user) {
+      window.location.href = 'index.html';
+    } else {
+      document.getElementById('auth-loading').style.display = 'none';
+      document.getElementById('main-page').style.display    = 'flex';
+    }
   });
 })();
 
-/* ─── Tab switch ──────────────────────────────────────────── */
+/* âââ Tab switch âââââââââââââââââââââââââââââââââââââââââââââ */
 function switchTab(tab) {
   document.getElementById('tab-login').classList.toggle('active', tab === 'login');
   document.getElementById('tab-register').classList.toggle('active', tab === 'register');
@@ -165,77 +167,94 @@ function switchTab(tab) {
   document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
 }
 
-/* ─── URL Setup ───────────────────────────────────────────── */
-async function testUrl() {
-  const url = document.getElementById('setup-url').value.trim();
-  if (!url) return;
-  setMsg('url-msg', '⏳ Testing connection…', '');
-  try {
-    const d = await API.health(url);
-    if (d.ok) setMsg('url-msg', '✅ Connected! ' + d.msg, 'success');
-    else       setMsg('url-msg', '❌ API responded but with error', 'error');
-  } catch(e) {
-    setMsg('url-msg', '❌ Could not reach API: ' + e.message, 'error');
-  }
-}
-
-function saveUrl() {
-  const url = document.getElementById('setup-url').value.trim();
-  if (!url.startsWith('https://script.google.com')) { setMsg('url-msg','Invalid URL','error'); return; }
-  API.setUrl(url);
-  document.getElementById('url-setup').style.display = 'none';
-  document.getElementById('auth-panel').style.display = 'block';
-}
-
-/* ─── Login ───────────────────────────────────────────────── */
+/* âââ Email/Password Login âââââââââââââââââââââââââââââââââââ */
 async function doLogin() {
   const email = document.getElementById('l-email').value.trim();
   const pass  = document.getElementById('l-pass').value;
-  if (!email || !pass) { setMsg('login-msg','Enter email and password','error'); return; }
+  if (!email || !pass) { setMsg('login-msg', 'Enter email and password', 'error'); return; }
   setLoading('login-btn', true);
   try {
-    const d = await API.login(email, pass);
-    API.setToken(d.token);
-    API.setUser(d.user);
+    await API.login(email, pass);
     window.location.href = 'index.html';
   } catch(e) {
-    setMsg('login-msg', e.message, 'error');
+    setMsg('login-msg', friendlyError(e), 'error');
     setLoading('login-btn', false);
   }
 }
 
-/* ─── Register ────────────────────────────────────────────── */
+/* âââ Register âââââââââââââââââââââââââââââââââââââââââââââââ */
 async function doRegister() {
   const name  = document.getElementById('r-name').value.trim();
   const email = document.getElementById('r-email').value.trim();
   const pass  = document.getElementById('r-pass').value;
   const pass2 = document.getElementById('r-pass2').value;
-  if (!name)          { setMsg('reg-msg','Name is required','error'); return; }
-  if (!email)         { setMsg('reg-msg','Email is required','error'); return; }
-  if (pass.length < 6){ setMsg('reg-msg','Password must be at least 6 characters','error'); return; }
-  if (pass !== pass2) { setMsg('reg-msg','Passwords do not match','error'); return; }
+  if (!name)           { setMsg('reg-msg', 'Name is required', 'error'); return; }
+  if (!email)          { setMsg('reg-msg', 'Email is required', 'error'); return; }
+  if (pass.length < 6) { setMsg('reg-msg', 'Password must be at least 6 characters', 'error'); return; }
+  if (pass !== pass2)  { setMsg('reg-msg', 'Passwords do not match', 'error'); return; }
   setLoading('reg-btn', true);
   try {
-    const d = await API.register(name, email, pass);
-    API.setToken(d.token);
-    API.setUser(d.user);
+    await API.register(name, email, pass);
     window.location.href = 'index.html';
   } catch(e) {
-    setMsg('reg-msg', e.message, 'error');
+    setMsg('reg-msg', friendlyError(e), 'error');
     setLoading('reg-btn', false);
   }
 }
 
-/* ─── Helpers ─────────────────────────────────────────────── */
+/* âââ Google Sign-In ââââââââââââââââââââââââââââââââââââââââââ */
+async function doGoogleLogin() {
+  ['google-login-btn','google-reg-btn'].forEach(id => {
+    const b = document.getElementById(id); if (b) b.disabled = true;
+  });
+  try {
+    await API.loginWithGoogle();
+    window.location.href = 'index.html';
+  } catch(e) {
+    setMsg('login-msg', friendlyError(e), 'error');
+    document.getElementById('form-login').style.display = 'block';
+    document.getElementById('form-register').style.display = 'none';
+    ['google-login-btn','google-reg-btn'].forEach(id => {
+      const b = document.getElementById(id); if (b) b.disabled = false;
+    });
+  }
+}
+
+/* âââ Allow Enter key ââââââââââââââââââââââââââââââââââââââââ */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const active = document.querySelector('.tab.active')?.id;
+  if (active === 'tab-login') doLogin();
+  else                        doRegister();
+});
+
+/* âââ Helpers âââââââââââââââââââââââââââââââââââââââââââââââââ */
 function setMsg(id, msg, type) {
   const el = document.getElementById(id);
-  el.textContent = msg; el.className = 'msg' + (type ? ' ' + type : '') + ' show';
+  el.textContent = msg;
+  el.className   = 'msg' + (type ? ' ' + type : '') + ' show';
 }
+
 function setLoading(id, on) {
   const btn = document.getElementById(id);
-  btn.disabled = on;
-  btn.innerHTML = on ? '<span class="spin"></span> Please wait…' : btn.dataset.label || btn.textContent;
+  btn.disabled  = on;
   if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+  btn.innerHTML = on ? '<span class="spin"></span> Please waitâ¦' : btn.dataset.label;
+}
+
+function friendlyError(e) {
+  const msg = e.message || '';
+  if (msg.includes('user-not-found') || msg.includes('wrong-password') || msg.includes('invalid-credential'))
+    return 'Invalid email or password';
+  if (msg.includes('email-already-in-use'))
+    return 'An account with this email already exists';
+  if (msg.includes('weak-password'))
+    return 'Password must be at least 6 characters';
+  if (msg.includes('too-many-requests'))
+    return 'Too many attempts. Please try again later';
+  if (msg.includes('popup-closed'))
+    return 'Google sign-in was cancelled';
+  return msg || 'Something went wrong. Please try again.';
 }
 </script>
 </body>
