@@ -117,19 +117,33 @@ async function init() {
 
 /* ─── Data ───────────────────────────────────────────────────────── */
 async function loadAllData() {
-  showLoading(true, 'Loading your habits...');
+  showLoading(true, 'Loading today\'s progress...');
   try {
     const [gR, cR, hR] = await Promise.all([
       API.goalsGet(), API.categoriesGet(), API.getHistory(90)
     ]);
     state.goals      = gR.goals      || [];
     state.categories = cR.categories || [];
-    state.history    = hR.records    || [];
+    // Deduplicate history by date (keep last/most complete record per date)
+    const rawHistory = hR.records || [];
+    const dateMap = new Map();
+    rawHistory.forEach(r => { if (r.Date) dateMap.set(r.Date, r); });
+    state.history = [...dateMap.values()].sort((a, b) => b.Date.localeCompare(a.Date));
     state.streaks    = computeStreaks(state.history, state.goals);
     await loadDateData(state.currentDate);
     showLoading(false);
     renderDashboard();
     updateDateUI();
+    // Welcome message after data is rendered
+    const sc   = computeScores(state.today, state.goals, state.categories);
+    const name = (state.user?.name || 'there').split(' ')[0];
+    if (sc.daily > 0) {
+      showToast(`Welcome back, ${name}! You've completed ${sc.daily}% of today's goals 🎯`, 'success');
+    } else {
+      const hr = new Date().getHours();
+      const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+      showToast(`${greet}, ${name}! Ready to crush today? 💪`, 'info');
+    }
   } catch(e) {
     showLoading(false);
     showApiError(e.message);
@@ -138,8 +152,13 @@ async function loadAllData() {
 
 async function loadDateData(dateStr) {
   state.currentDate = dateStr;
-  const cached = state.history.find(r => r.Date === dateStr);
-  if (cached) { state.today = { ...cached }; return; }
+  // Always fetch fresh from API for today — ensures latest saved data is shown
+  // on any device/browser without stale cache issues.
+  // For past dates, use the deduplicated history cache (avoids extra API calls).
+  if (dateStr !== todayStr()) {
+    const cached = state.history.find(r => r.Date === dateStr);
+    if (cached) { state.today = { ...cached }; return; }
+  }
   try { const d = await API.getDate(dateStr); state.today = d.record || {}; }
   catch { state.today = {}; }
 }
@@ -189,7 +208,6 @@ function updateAllInputs() {
       const inp = el('val-' + g.id);
       const v = (val !== undefined && val !== '') ? val : 0;
       if (inp) inp.value = v;
-      if (isCaloriesGoal(g)) updateCalorieFeedback(g.id, v);
     }
   });
   refreshScoreBadge();
@@ -243,7 +261,7 @@ function isProteinGoal(g) {
 function getStep(g) {
   if (!g) return 1;
   if (isStepsGoal(g))    return 500;    // Walking: 500 steps per click
-  if (isCaloriesGoal(g)) return 250;    // Calories: 250 kcal per click
+  if (isCaloriesGoal(g)) return 100;    // Calories: 100 kcal per click (reach 1600 exactly)
   if (isProteinGoal(g))  return 10;     // Protein: 10 g per click
   if (g.unit === 'L' || g.unit === 'hrs') return 0.5;
   if (g.unit === 'min')  return 5;
@@ -284,11 +302,18 @@ function getCalorieFeedback(calories) {
   return               { msg: '🔥 ' + CAL_MSGS.high[idx % CAL_MSGS.high.length], cls: 'high' };
 }
 
-function updateCalorieFeedback(gid, calories) {
-  const fb = el('cal-fb-' + gid); if (!fb) return;
-  const { msg, cls } = getCalorieFeedback(calories);
-  fb.textContent = msg;
-  fb.className = 'calorie-feedback' + (cls ? ' ' + cls : '');
+/* Debounced calorie toast — fires 2.5 s after the last adjustment */
+let _calToastTimer = null;
+function scheduleCalorieFeedback(calories) {
+  clearTimeout(_calToastTimer);
+  if (!calories || parseFloat(calories) <= 0) return;
+  _calToastTimer = setTimeout(() => {
+    const { msg, cls } = getCalorieFeedback(calories);
+    if (msg) {
+      const type = cls === 'good' ? 'success' : cls === 'high' ? 'warning' : 'error';
+      showToast(msg, type);
+    }
+  }, 2500);
 }
 
 /* ─── Habit Cards ────────────────────────────────────────────────── */
@@ -342,8 +367,6 @@ function renderCard(g) {
   const cur  = (val !== undefined && val !== '') ? parseFloat(val) : 0;
   const pct  = Math.min(100, Math.round((cur / (g.target || 1)) * 100));
   const step = getStep(g);
-  const isCal = isCaloriesGoal(g);
-  const calFb  = isCal ? getCalorieFeedback(cur) : null;
 
   return `<div class="habit-card qty-card ${pct >= 100 ? 'done' : ''}" id="card-${g.id}">
     <button class="qty-edge-btn minus-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},-1)" ${locked ? 'disabled' : ''}>−</button>
@@ -372,7 +395,6 @@ function renderCard(g) {
         <div class="habit-bar-fill" id="bar-${g.id}" style="width:${pct}%;background:${g.color || '#6366f1'}"></div>
       </div>
       <div class="habit-target" id="tgt-${g.id}">Target: ${g.target} ${g.unit || ''} · ${pct}%</div>
-      ${isCal ? `<div class="calorie-feedback ${calFb.cls}" id="cal-fb-${g.id}">${calFb.msg}</div>` : ''}
     </div>
     <button class="qty-edge-btn plus-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},1)" ${locked ? 'disabled' : ''}>+</button>
   </div>`;
@@ -412,7 +434,7 @@ function adjustHabit(gid, gn, target, delta) {
     setTimeout(() => card.classList.remove('value-changed'), 400);
   }
 
-  if (g && isCaloriesGoal(g)) updateCalorieFeedback(gid, cur);
+  if (g && isCaloriesGoal(g)) scheduleCalorieFeedback(cur);
   markDirty();
   refreshScoreBadge(); renderScoreRings(); renderMotivation();
 }
@@ -441,7 +463,7 @@ function handleManualInput(gid, gname, target, inputEl) {
     setTimeout(() => card.classList.remove('value-changed'), 400);
   }
 
-  if (g && isCaloriesGoal(g)) updateCalorieFeedback(gid, val);
+  if (g && isCaloriesGoal(g)) scheduleCalorieFeedback(val);
   markDirty();
   refreshScoreBadge(); renderScoreRings(); renderMotivation();
 }
@@ -451,6 +473,7 @@ async function submitDay() {
   if (isDateLocked(state.currentDate)) {
     showToast('This date is locked — edits older than 7 days are not allowed.', 'error'); return;
   }
+  clearTimeout(_autoSaveTimer); // cancel pending auto-save to prevent double-save
   const btn = el('submit-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
   const sc = computeScores(state.today, state.goals, state.categories);
@@ -833,16 +856,30 @@ function showToast(msg, type) {
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
 }
 
-/* ─── Dirty State ────────────────────────────────────────────────── */
+/* ─── Dirty State & Auto-Save ────────────────────────────────────── */
+let _autoSaveTimer = null;
+
 function markDirty() {
   state.dirty = true;
   const btn = el('nav-save-btn');
   if (btn) btn.style.display = 'flex';
+  scheduleAutoSave();
 }
 function markClean() {
   state.dirty = false;
+  clearTimeout(_autoSaveTimer);
   const btn = el('nav-save-btn');
   if (btn) btn.style.display = 'none';
+}
+
+/* Auto-save 3 seconds after the last change — keeps Sheets in sync */
+function scheduleAutoSave() {
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(async () => {
+    if (state.dirty && !isDateLocked(state.currentDate)) {
+      await submitDay();
+    }
+  }, 3000);
 }
 
 /* ─── Calendar Picker ────────────────────────────────────────────── */
