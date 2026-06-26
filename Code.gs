@@ -215,7 +215,9 @@ function dataGet(token, date) {
   if (!sheet || sheet.getLastRow() < 2) return { ok:true, record:null };
   const all     = sheet.getDataRange().getValues();
   const headers = all[0];
-  const row     = all.slice(1).find(r => fmtDate(r[0]) === String(date));
+  // Use last matching row (in case duplicate rows exist from before upsert fix)
+  const matches = all.slice(1).filter(r => fmtDate(r[0]) === String(date));
+  const row     = matches.length ? matches[matches.length - 1] : null;
   if (!row) return { ok:true, record:null };
   const record = {};
   headers.forEach((h, i) => { record[h] = (h === 'Date') ? fmtDate(row[i]) : row[i]; });
@@ -228,7 +230,11 @@ function dataHistory(token, limit) {
   if (!sheet || sheet.getLastRow() < 2) return { ok:true, records:[] };
   const all     = sheet.getDataRange().getValues();
   const headers = all[0];
-  const records = all.slice(1).filter(r => r[0]).slice(-Number(limit))
+  // Deduplicate by date — keep last row per date (handles legacy duplicate rows)
+  const allRows = all.slice(1).filter(r => r[0]);
+  const dateMap = new Map();
+  allRows.forEach(row => { dateMap.set(fmtDate(row[0]), row); });
+  const records = [...dateMap.values()].slice(-Number(limit))
     .map(row => {
       const r = {};
       headers.forEach((h, i) => { r[h] = (h === 'Date') ? fmtDate(row[i]) : row[i]; });
