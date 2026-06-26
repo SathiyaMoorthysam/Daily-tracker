@@ -32,6 +32,9 @@
     <button id="nav-admin"     class="nav-btn admin-only" style="display:none" onclick="showSection('admin')">🛡 Admin</button>
   </div>
   <div class="nav-user">
+    <button id="nav-save-btn" class="nav-save-btn" onclick="submitDay()" title="Save unsaved changes" style="display:none">
+      💾 Save
+    </button>
     <span id="user-name" class="user-name"></span>
     <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme"><span id="theme-icon">☀️</span></button>
     <button class="icon-btn danger" onclick="logout()" title="Logout">🚪</button>
@@ -50,7 +53,10 @@
   <!-- Date nav -->
   <div class="date-bar">
     <button id="prev-date" class="date-nav-btn" onclick="changeDate(-1)">‹ Prev</button>
-    <span id="current-date" class="current-date"></span>
+    <div class="date-center">
+      <span id="current-date" class="current-date"></span>
+      <button class="cal-trigger-btn" onclick="openCalendar()" title="Pick a date">📅</button>
+    </div>
     <button id="next-date" class="date-nav-btn" onclick="changeDate(1)">Next ›</button>
   </div>
 
@@ -204,6 +210,28 @@
     <div class="btn-row">
       <button class="btn-secondary sm" onclick="el('goal-modal').style.display='none'">Cancel</button>
       <button class="btn-primary sm"   onclick="saveGoalModal()">Save Goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     CALENDAR PICKER
+════════════════════════════════════════════════════════════ -->
+<div id="cal-overlay" class="cal-overlay" style="display:none" onclick="if(event.target===this)closeCalendar()">
+  <div class="cal-popup">
+    <div class="cal-header">
+      <button class="cal-nav-btn" onclick="calShiftMonth(-1)">‹</button>
+      <span class="cal-month-label" id="cal-month-label">June 2026</span>
+      <button class="cal-nav-btn" onclick="calShiftMonth(1)">›</button>
+    </div>
+    <div class="cal-weekdays">
+      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-legend">
+      <span class="cal-legend-item"><span class="cal-legend-dot dot-today"></span>Today</span>
+      <span class="cal-legend-item"><span class="cal-legend-dot dot-data"></span>Has data</span>
+      <span class="cal-legend-item"><span class="cal-legend-dot dot-sel"></span>Selected</span>
     </div>
   </div>
 </div>

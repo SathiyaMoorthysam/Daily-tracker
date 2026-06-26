@@ -172,6 +172,20 @@ function categoriesSave(token, categories) {
 }
 
 /* ═══ DATA ════════════════════════════════════════════════════ */
+
+/**
+ * Format a Sheets cell value as a yyyy-MM-dd string.
+ * Google Sheets auto-converts stored date strings to JavaScript Date objects
+ * when read via getValues(). String(Date) produces a long locale string that
+ * never matches "yyyy-MM-dd" — this helper normalises both cases.
+ */
+function fmtDate(val) {
+  if (Object.prototype.toString.call(val) === '[object Date]') {
+    return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return String(val).trim();
+}
+
 function dataLog(token, data) {
   const user  = requireAuth(token);
   const goals = JSON.parse(PROPS.getProperty('goals_'+user.id)||'[]');
@@ -182,33 +196,44 @@ function dataLog(token, data) {
   const date    = data.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
   const allRows = sheet.getDataRange().getValues();
   let rowIdx = -1;
-  for (let i=1; i<allRows.length; i++) { if (String(allRows[i][0])===String(date)) { rowIdx=i+1; break; } }
+  for (let i = 1; i < allRows.length; i++) {
+    if (fmtDate(allRows[i][0]) === String(date)) { rowIdx = i + 1; break; }
+  }
   const row = headers.map(h => {
     if (h==='Date') return date;
     if (h==='Day')  return new Date(date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'});
     return (data[h]!==undefined && data[h]!==null) ? data[h] : '';
   });
-  if (rowIdx===-1) sheet.appendRow(row);
-  else             sheet.getRange(rowIdx,1,1,row.length).setValues([row]);
+  if (rowIdx === -1) sheet.appendRow(row);
+  else               sheet.getRange(rowIdx,1,1,row.length).setValues([row]);
   return { ok:true };
 }
+
 function dataGet(token, date) {
   const user  = requireAuth(token);
   const sheet = getUserSheetTab(user.id);
-  if (!sheet || sheet.getLastRow()<2) return { ok:true, record:null };
-  const all=sheet.getDataRange().getValues(); const headers=all[0];
-  const row=all.slice(1).find(r=>String(r[0])===String(date));
+  if (!sheet || sheet.getLastRow() < 2) return { ok:true, record:null };
+  const all     = sheet.getDataRange().getValues();
+  const headers = all[0];
+  const row     = all.slice(1).find(r => fmtDate(r[0]) === String(date));
   if (!row) return { ok:true, record:null };
-  const record={}; headers.forEach((h,i)=>record[h]=row[i]);
+  const record = {};
+  headers.forEach((h, i) => { record[h] = (h === 'Date') ? fmtDate(row[i]) : row[i]; });
   return { ok:true, record };
 }
+
 function dataHistory(token, limit) {
   const user  = requireAuth(token);
   const sheet = getUserSheetTab(user.id);
-  if (!sheet || sheet.getLastRow()<2) return { ok:true, records:[] };
-  const all=sheet.getDataRange().getValues(); const headers=all[0];
-  const records = all.slice(1).filter(r=>r[0]).slice(-Number(limit))
-    .map(row=>{ const r={}; headers.forEach((h,i)=>r[h]=row[i]); return r; });
+  if (!sheet || sheet.getLastRow() < 2) return { ok:true, records:[] };
+  const all     = sheet.getDataRange().getValues();
+  const headers = all[0];
+  const records = all.slice(1).filter(r => r[0]).slice(-Number(limit))
+    .map(row => {
+      const r = {};
+      headers.forEach((h, i) => { r[h] = (h === 'Date') ? fmtDate(row[i]) : row[i]; });
+      return r;
+    });
   return { ok:true, records };
 }
 

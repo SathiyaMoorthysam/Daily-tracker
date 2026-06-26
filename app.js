@@ -14,6 +14,9 @@ const state = {
   currentDate: '',
   theme     : 'dark',
   streaks   : {},
+  dirty     : false,
+  calYear   : new Date().getFullYear(),
+  calMonth  : new Date().getMonth(),  // 0-indexed
 };
 
 /* ─── DOM helpers ────────────────────────────────────────────────── */
@@ -43,11 +46,13 @@ function updateLockState() {
   const locked = isDateLocked(state.currentDate);
   const banner = el('lock-banner');
   if (banner) banner.style.display = locked ? 'flex' : 'none';
-  qsa('.habit-input,.qty-btn,.qty-input,.toggle-input').forEach(e => {
+  qsa('.habit-input,.qty-edge-btn,.qty-input,.toggle-input').forEach(e => {
     e.disabled = locked; e.style.opacity = locked ? '0.4' : '1';
   });
   const sb = el('submit-btn');
   if (sb) { sb.disabled = locked; sb.style.opacity = locked ? '0.4' : '1'; }
+  const nsb = el('nav-save-btn');
+  if (nsb && locked) { nsb.style.display = 'none'; }
 }
 
 /* ─── Score Engine ───────────────────────────────────────────────── */
@@ -340,34 +345,36 @@ function renderCard(g) {
   const isCal = isCaloriesGoal(g);
   const calFb  = isCal ? getCalorieFeedback(cur) : null;
 
-  return `<div class="habit-card ${pct >= 100 ? 'done' : ''}" id="card-${g.id}">
-    <div class="habit-top">
-      <span class="habit-icon">${g.icon || '📊'}</span>
-      ${streak > 0 ? `<span class="streak-pip">${streak}🔥</span>` : ''}
+  return `<div class="habit-card qty-card ${pct >= 100 ? 'done' : ''}" id="card-${g.id}">
+    <button class="qty-edge-btn minus-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},-1)" ${locked ? 'disabled' : ''}>−</button>
+    <div class="card-body">
+      <div class="habit-top">
+        <span class="habit-icon">${g.icon || '📊'}</span>
+        ${streak > 0 ? `<span class="streak-pip">${streak}🔥</span>` : ''}
+      </div>
+      <div class="habit-name">${g.name}</div>
+      <div class="qty-center">
+        <input
+          type="number"
+          class="qty-input"
+          id="val-${g.id}"
+          value="${cur}"
+          min="0"
+          step="${step}"
+          autocomplete="off"
+          ${locked ? 'disabled' : ''}
+          oninput="handleManualInput('${g.id}','${g.name}',${g.target || 1},this)"
+          onchange="handleManualInput('${g.id}','${g.name}',${g.target || 1},this)"
+        />
+        <span class="qty-unit">${g.unit || ''}</span>
+      </div>
+      <div class="habit-bar">
+        <div class="habit-bar-fill" id="bar-${g.id}" style="width:${pct}%;background:${g.color || '#6366f1'}"></div>
+      </div>
+      <div class="habit-target" id="tgt-${g.id}">Target: ${g.target} ${g.unit || ''} · ${pct}%</div>
+      ${isCal ? `<div class="calorie-feedback ${calFb.cls}" id="cal-fb-${g.id}">${calFb.msg}</div>` : ''}
     </div>
-    <div class="habit-name">${g.name}</div>
-    <div class="qty-row">
-      <button class="qty-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},-1)" ${locked ? 'disabled' : ''}>−</button>
-      <input
-        type="number"
-        class="qty-input"
-        id="val-${g.id}"
-        value="${cur}"
-        min="0"
-        step="${step}"
-        autocomplete="off"
-        ${locked ? 'disabled' : ''}
-        oninput="handleManualInput('${g.id}','${g.name}',${g.target || 1},this)"
-        onchange="handleManualInput('${g.id}','${g.name}',${g.target || 1},this)"
-      />
-      <span class="qty-unit">${g.unit || ''}</span>
-      <button class="qty-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},1)" ${locked ? 'disabled' : ''}>+</button>
-    </div>
-    <div class="habit-bar">
-      <div class="habit-bar-fill" id="bar-${g.id}" style="width:${pct}%;background:${g.color || '#6366f1'}"></div>
-    </div>
-    <div class="habit-target" id="tgt-${g.id}">Target: ${g.target} ${g.unit || ''} · ${pct}%</div>
-    ${isCal ? `<div class="calorie-feedback ${calFb.cls}" id="cal-fb-${g.id}">${calFb.msg}</div>` : ''}
+    <button class="qty-edge-btn plus-btn" onclick="adjustHabit('${g.id}','${g.name}',${g.target || 1},1)" ${locked ? 'disabled' : ''}>+</button>
   </div>`;
 }
 
@@ -376,6 +383,7 @@ function toggleBoolean(gid, gn, ch) {
   if (isDateLocked(state.currentDate)) return;
   state.today[gn] = ch ? 1 : 0;
   const card = el('card-' + gid); if (card) card.classList.toggle('done', ch);
+  markDirty();
   refreshScoreBadge(); renderScoreRings(); renderMotivation();
 }
 
@@ -405,7 +413,7 @@ function adjustHabit(gid, gn, target, delta) {
   }
 
   if (g && isCaloriesGoal(g)) updateCalorieFeedback(gid, cur);
-
+  markDirty();
   refreshScoreBadge(); renderScoreRings(); renderMotivation();
 }
 
@@ -434,7 +442,7 @@ function handleManualInput(gid, gname, target, inputEl) {
   }
 
   if (g && isCaloriesGoal(g)) updateCalorieFeedback(gid, val);
-
+  markDirty();
   refreshScoreBadge(); renderScoreRings(); renderMotivation();
 }
 
@@ -458,16 +466,18 @@ async function submitDay() {
     if (idx >= 0) state.history[idx] = rec; else state.history.push(rec);
     state.streaks = computeStreaks(state.history, state.goals);
     renderStreakBadges();
+    markClean();
     showToast('Saved to Google Sheets!', 'success');
     renderDashboard();
   } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
-  finally { if (btn) { btn.disabled = false; btn.textContent = 'Save Today'; } }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '💾 Save Today'; } }
 }
 
 /* ─── Date Navigation ────────────────────────────────────────────── */
 async function changeDate(delta) {
   const nd = addDays(state.currentDate, delta);
   if (nd > todayStr()) return;
+  markClean();
   showLoading(true, 'Loading...');
   await loadDateData(nd);
   renderDashboard();
@@ -821,6 +831,84 @@ function showToast(msg, type) {
   document.body.appendChild(t);
   requestAnimationFrame(() => t.classList.add('show'));
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+}
+
+/* ─── Dirty State ────────────────────────────────────────────────── */
+function markDirty() {
+  state.dirty = true;
+  const btn = el('nav-save-btn');
+  if (btn) btn.style.display = 'flex';
+}
+function markClean() {
+  state.dirty = false;
+  const btn = el('nav-save-btn');
+  if (btn) btn.style.display = 'none';
+}
+
+/* ─── Calendar Picker ────────────────────────────────────────────── */
+function openCalendar() {
+  const d = new Date(state.currentDate + 'T12:00:00');
+  state.calYear  = d.getFullYear();
+  state.calMonth = d.getMonth();
+  renderCalendar();
+  const ov = el('cal-overlay');
+  if (ov) ov.style.display = 'flex';
+}
+
+function closeCalendar() {
+  const ov = el('cal-overlay');
+  if (ov) ov.style.display = 'none';
+}
+
+function calShiftMonth(delta) {
+  state.calMonth += delta;
+  if (state.calMonth < 0)  { state.calMonth = 11; state.calYear--; }
+  if (state.calMonth > 11) { state.calMonth = 0;  state.calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const lbl  = el('cal-month-label');
+  const grid = el('cal-grid');
+  if (!lbl || !grid) return;
+
+  const MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  lbl.textContent = MONTHS[state.calMonth] + ' ' + state.calYear;
+
+  const dateDates  = new Set(state.history.map(r => r.Date).filter(Boolean));
+  const today      = todayStr();
+  const selDate    = state.currentDate;
+  const firstDay   = new Date(state.calYear, state.calMonth, 1).getDay();
+  const daysInMonth = new Date(state.calYear, state.calMonth + 1, 0).getDate();
+
+  let html = '';
+  for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = state.calYear + '-' +
+      String(state.calMonth + 1).padStart(2, '0') + '-' +
+      String(d).padStart(2, '0');
+    const isFuture = ds > today;
+    let cls = 'cal-day';
+    if (isFuture)               cls += ' cal-future';
+    if (ds === today)           cls += ' cal-today';
+    if (ds === selDate)         cls += ' cal-selected';
+    if (dateDates.has(ds) && !isFuture) cls += ' cal-has-data';
+    const dot   = dateDates.has(ds) && !isFuture ? '<span class="cal-dot"></span>' : '';
+    const click = !isFuture ? `onclick="selectCalDate('${ds}')"` : '';
+    html += `<div class="${cls}" ${click}>${d}${dot}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+async function selectCalDate(dateStr) {
+  closeCalendar();
+  if (dateStr === state.currentDate) return;
+  markClean();
+  showLoading(true, 'Loading ' + fmtDate(dateStr) + '...');
+  await loadDateData(dateStr);
+  renderDashboard();
+  showLoading(false);
 }
 
 /* ─── Boot ───────────────────────────────────────────────────────── */
