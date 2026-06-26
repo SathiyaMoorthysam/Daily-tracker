@@ -1,31 +1,31 @@
-/* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-   HabitOS â Firebase API Layer  (api.js)
+/* ═══════════════════════════════════════════════════════════════
+   HabitOS — Firebase API Layer  (api.js)
    Storage: Firebase Firestore  |  Auth: Firebase Auth
-   No server needed â runs entirely in the browser.
+   No server needed — runs entirely in the browser.
 
-   âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-   â  SETUP: Replace the FIREBASE_CONFIG values below with your  â
-   â  own project config from:                                   â
-   â  Firebase Console â Project Settings â Your apps â Web app  â
-   âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+   ┌─────────────────────────────────────────────────────────────┐
+   │  SETUP: Replace the FIREBASE_CONFIG values below with your  │
+   │  own project config from:                                   │
+   │  Firebase Console → Project Settings → Your apps → Web app  │
+   └─────────────────────────────────────────────────────────────┘
+═══════════════════════════════════════════════════════════════ */
 
 const API = (() => {
 
-  /* ââ ð¥ Firebase Config ââââââââââââââââââââââââââââââââââââââââ
-     Paste your config here. These values are safe to commit â
+  /* ── 🔥 Firebase Config ────────────────────────────────────────
+     Paste your config here. These values are safe to commit —
      Firebase security comes from Firestore Rules, not this config.
-  âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+  ─────────────────────────────────────────────────────────────── */
   const FIREBASE_CONFIG = {
-    apiKey           : "REPLACE_WITH_YOUR_API_KEY",
-    authDomain       : "REPLACE_WITH_YOUR_AUTH_DOMAIN",
-    projectId        : "REPLACE_WITH_YOUR_PROJECT_ID",
-    storageBucket    : "REPLACE_WITH_YOUR_STORAGE_BUCKET",
-    messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
-    appId            : "REPLACE_WITH_YOUR_APP_ID"
+    apiKey           : "AIzaSyDSK0oZV3SrhCR8dwLKPbtaOprquZDG0WM",
+    authDomain       : "habitos-tracker-78f35.firebaseapp.com",
+    projectId        : "habitos-tracker-78f35",
+    storageBucket    : "habitos-tracker-78f35.firebasestorage.app",
+    messagingSenderId: "428657901039",
+    appId            : "1:428657901039:web:233d540bdfdf2d79bb8a1a"
   };
 
-  /* ââ Internal state âââââââââââââââââââââââââââââââââââââââââââ */
+  /* ── Internal state ─────────────────────────────────────────── */
   let _auth = null;
   let _db   = null;
 
@@ -39,7 +39,7 @@ const API = (() => {
   function auth() { _init(); return _auth; }
   function db()   { _init(); return _db;   }
 
-  /* ââ Firestore path helpers âââââââââââââââââââââââââââââââââââ */
+  /* ── Firestore path helpers ─────────────────────────────────── */
   function _uid() {
     const u = auth().currentUser;
     if (!u) throw new Error('Not signed in');
@@ -49,7 +49,7 @@ const API = (() => {
   const _logsCol   = ()     => _userDoc().collection('logs');
   const _logDoc    = (date) => _logsCol().doc(date);
 
-  /* ââ LocalStorage cache (name/email for fast nav display) ââââââ */
+  /* ── LocalStorage cache (name/email for fast nav display) ────── */
   const KEY_USER = 'habitos-user';
   const getUser  = () => {
     try { return JSON.parse(localStorage.getItem(KEY_USER) || 'null'); } catch { return null; }
@@ -60,24 +60,24 @@ const API = (() => {
     try { auth().signOut(); } catch(_) {}
   };
 
-  /* ââ Auth state listener ââââââââââââââââââââââââââââââââââââââ */
+  /* ── Auth state listener ────────────────────────────────────── */
   function onAuthChange(callback) {
     _init();
     return _auth.onAuthStateChanged(callback); // returns unsubscribe fn
   }
 
-  /* ââ Default categories for new users âââââââââââââââââââââââââââ */
+  /* ── Default categories for new users ─────────────────────────── */
   const DEFAULT_CATEGORIES = [
-    { name:'Health',    weight:10, color:'#10b981', icon:'â¤ï¸' },
-    { name:'Fitness',   weight:10, color:'#6366f1', icon:'ðª' },
-    { name:'Nutrition', weight:10, color:'#f59e0b', icon:'ð¥' },
-    { name:'Mindset',   weight:10, color:'#8b5cf6', icon:'ð§ ' },
-    { name:'Sleep',     weight:10, color:'#ec4899', icon:'ð´' },
+    { name:'Health',    weight:10, color:'#10b981', icon:'❤️' },
+    { name:'Fitness',   weight:10, color:'#6366f1', icon:'💪' },
+    { name:'Nutrition', weight:10, color:'#f59e0b', icon:'🥗' },
+    { name:'Mindset',   weight:10, color:'#8b5cf6', icon:'🧠' },
+    { name:'Sleep',     weight:10, color:'#ec4899', icon:'😴' },
   ];
 
-  /* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  /* ─────────────────────────────────────────────────────────────
      AUTH METHODS
-  âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+  ───────────────────────────────────────────────────────────── */
 
   async function register(name, email, password) {
     const cred = await auth().createUserWithEmailAndPassword(email, password);
@@ -104,7 +104,7 @@ const API = (() => {
     const docRef = db().collection('users').doc(user.uid);
     const docSnap = await docRef.get();
     if (!docSnap.exists) {
-      // First Google login â create user doc
+      // First Google login — create user doc
       await docRef.set({
         name      : user.displayName || 'User',
         email     : user.email,
@@ -185,12 +185,12 @@ const API = (() => {
   /* Health check */
   async function health() {
     _init();
-    return { ok: true, msg: 'Firebase connected â' };
+    return { ok: true, msg: 'Firebase connected ✓' };
   }
 
-  /* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  /* ─────────────────────────────────────────────────────────────
      GOALS
-  âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+  ───────────────────────────────────────────────────────────── */
 
   async function goalsGet() {
     const doc = await _userDoc().get();
@@ -223,7 +223,7 @@ const API = (() => {
 
   async function goalsRemove(goalId) {
     const doc   = await _userDoc().get();
-    const goals = (doc.data()?.goals || []).filter(g => g.id !== goalId);
+    const goals = (doc.data()?.goals&�| []).filter(g => g.id !== goalId);
     await _userDoc().update({ goals });
     return { ok: true };
   }
@@ -241,9 +241,9 @@ const API = (() => {
     return goalsEdit(goalId, { enabled });
   }
 
-  /* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  /* ─────────────────────────────────────────────────────────────
      CATEGORIES
-  âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+  ───────────────────────────────────────────────────────────── */
 
   async function categoriesGet() {
     const doc = await _userDoc().get();
@@ -255,9 +255,9 @@ const API = (() => {
     return { ok: true };
   }
 
-  /* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  /* ─────────────────────────────────────────────────────────────
      DAILY DATA  (stored in users/{uid}/logs/{date})
-  âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+  ───────────────────────────────────────────────────────────── */
 
   async function logDay(data) {
     const date = data.Date || data.date || new Date().toISOString().slice(0, 10);
@@ -284,16 +284,16 @@ const API = (() => {
     return { ok: true, records };
   }
 
-  /* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-     SHEET STUBS  (no longer used â kept for compat)
-  âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+  /* ─────────────────────────────────────────────────────────────
+     SHEET STUBS  (no longer used — kept for compat)
+  ───────────────────────────────────────────────────────────── */
 
   async function sheetUrl()    { return { ok: true, url: null }; }
   async function sheetVerify() { return { ok: true, connected: false }; }
 
-  /* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  /* ─────────────────────────────────────────────────────────────
      ADMIN  (requires Firestore rule: admin role can read all users)
-  âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+  ───────────────────────────────────────────────────────────── */
 
   async function adminUsers() {
     const snap  = await db().collection('users').get();
@@ -339,17 +339,17 @@ const API = (() => {
     return { ok: true };
   }
 
-  /* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  /* ─────────────────────────────────────────────────────────────
      COMPAT STUBS  (app.js references these for token/URL checks)
-  âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+  ───────────────────────────────────────────────────────────── */
   const getUrl   = () => 'firebase';   // non-empty = "configured"
   const setUrl   = () => {};
   const getToken = () => auth().currentUser ? 'firebase-session' : '';
   const setToken = () => {};
 
-  /* âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+  /* ─────────────────────────────────────────────────────────────
      PUBLIC API
-  âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+  ───────────────────────────────────────────────────────────── */
   return {
     /* Compat */
     getUrl, setUrl, getToken, setToken, getUser, setUser, clearAuth,
@@ -376,6 +376,4 @@ const API = (() => {
     /* Admin */
     adminUsers, adminDeactivate, adminActivate,
     adminResetPass: (uid, _pw) => adminResetPass(uid), // _pw ignored, sends email
-    adminDelete,
-  };
-})();
+  
