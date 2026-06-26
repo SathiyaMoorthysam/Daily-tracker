@@ -1,5 +1,5 @@
-/* HabitOS v2 — Service Worker */
-const CACHE    = 'habitos-v2-cache';
+/* HabitOS v3 — Service Worker (cache busted for Firebase migration) */
+const CACHE    = 'habitos-v3-cache';
 const PRECACHE = [
   './',
   './index.html',
@@ -29,8 +29,15 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  /* Let API calls pass through (no cache) */
-  if (e.request.url.includes('script.google.com')) return;
+  const url = e.request.url;
+  /* Never cache: Firebase Auth/Firestore requests, Google APIs, CDN SDKs */
+  if (url.includes('googleapis.com')         ||
+      url.includes('gstatic.com/firebasejs') ||
+      url.includes('firebaseapp.com')        ||
+      url.includes('firebaseio.com')         ||
+      url.includes('script.google.com')) {
+    return; // let the browser handle it directly
+  }
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
