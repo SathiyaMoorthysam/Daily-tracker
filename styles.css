@@ -448,8 +448,10 @@ input,select,button,textarea { font-family:inherit }
   background:var(--surface2); border:1px solid var(--border); color:var(--text);
 }
 .toast.show   { opacity:1; transform:translateY(0) }
-.toast-success{ background:rgba(16,185,129,.15); border-color:rgba(16,185,129,.4); color:#6ee7b7 }
-.toast-error  { background:rgba(239,68,68,.12);  border-color:rgba(239,68,68,.35); color:#fca5a5 }
+.toast-success { background:rgba(16,185,129,.15); border-color:rgba(16,185,129,.4); color:#6ee7b7 }
+.toast-error   { background:rgba(239,68,68,.12);  border-color:rgba(239,68,68,.35); color:#fca5a5 }
+.toast-warning { background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.35); color:#fcd34d }
+.toast-info    { background:rgba(99,102,241,.12); border-color:rgba(99,102,241,.35); color:#a5b4fc }
 
 /* ── Scrollbar ─────────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width:6px; height:6px }
