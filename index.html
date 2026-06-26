@@ -4,60 +4,60 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="theme-color" content="#0f0e17"/>
-<meta name="description" content="HabitOS — Track your daily habits and build a better life"/>
-<title>HabitOS — Daily Habit Tracker</title>
+<meta name="description" content="HabitOS â Track your daily habits and build a better life"/>
+<title>HabitOS â Daily Habit Tracker</title>
 <link rel="manifest" href="manifest.json"/>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>â¡</text></svg>"/>
 <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
 
-<!-- ── Loading Overlay ─────────────────────────────────────────── -->
+<!-- ââ Loading Overlay âââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="loading-overlay" style="display:flex">
   <div class="loading-spinner"></div>
-  <div class="loading-msg">Starting HabitOS…</div>
+  <div class="loading-msg">Starting HabitOSâ¦</div>
 </div>
 
-<!-- ── Top Nav ─────────────────────────────────────────────────── -->
+<!-- ââ Top Nav âââââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <nav class="top-nav">
   <div class="nav-brand">
-    <span class="nav-logo">⚡</span>
+    <span class="nav-logo">â¡</span>
     <span class="nav-title">HabitOS</span>
     <span id="score-badge" class="score-badge">0%</span>
   </div>
   <div class="nav-links">
-    <button id="nav-dashboard" class="nav-btn active"  onclick="showSection('dashboard')">📊 Dashboard</button>
-    <button id="nav-analytics" class="nav-btn"         onclick="showSection('analytics')">📈 Analytics</button>
-    <button id="nav-settings"  class="nav-btn"         onclick="showSection('settings')">⚙️ Settings</button>
-    <button id="nav-admin"     class="nav-btn admin-only" style="display:none" onclick="showSection('admin')">🛡 Admin</button>
+    <button id="nav-dashboard" class="nav-btn active"  onclick="showSection('dashboard')">ð Dashboard</button>
+    <button id="nav-analytics" class="nav-btn"         onclick="showSection('analytics')">ð Analytics</button>
+    <button id="nav-settings"  class="nav-btn"         onclick="showSection('settings')">âï¸ Settings</button>
+    <button id="nav-admin"     class="nav-btn admin-only" style="display:none" onclick="showSection('admin')">ð¡ Admin</button>
   </div>
   <div class="nav-user">
     <button id="nav-save-btn" class="nav-save-btn" onclick="submitDay()" title="Save unsaved changes" style="display:none">
-      💾 Save
+      ð¾ Save
     </button>
     <span id="user-name" class="user-name"></span>
-    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme"><span id="theme-icon">☀️</span></button>
-    <button class="icon-btn danger" onclick="logout()" title="Logout">🚪</button>
+    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme"><span id="theme-icon">âï¸</span></button>
+    <button class="icon-btn danger" onclick="logout()" title="Logout">ðª</button>
   </div>
 </nav>
 
-<!-- ════════════════════════════════════════════════════════════
+<!-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
      DASHBOARD
-════════════════════════════════════════════════════════════ -->
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="sec-dashboard" class="section">
   <!-- Lock Banner -->
   <div id="lock-banner" class="lock-banner" style="display:none">
-    🔒 This date is locked — edits older than 7 days are not allowed
+    ð This date is locked â edits older than 7 days are not allowed
   </div>
 
   <!-- Date nav -->
   <div class="date-bar">
-    <button id="prev-date" class="date-nav-btn" onclick="changeDate(-1)">‹ Prev</button>
+    <button id="prev-date" class="date-nav-btn" onclick="changeDate(-1)">â¹ Prev</button>
     <div class="date-center">
       <span id="current-date" class="current-date"></span>
-      <button class="cal-trigger-btn" onclick="openCalendar()" title="Pick a date">📅</button>
+      <button class="cal-trigger-btn" onclick="openCalendar()" title="Pick a date">ð</button>
     </div>
-    <button id="next-date" class="date-nav-btn" onclick="changeDate(1)">Next ›</button>
+    <button id="next-date" class="date-nav-btn" onclick="changeDate(1)">Next âº</button>
   </div>
 
   <!-- Score rings (dynamically rendered) -->
@@ -69,7 +69,7 @@
   </div>
 
   <!-- Streak badges -->
-  <div class="section-heading">🔥 Active Streaks</div>
+  <div class="section-heading">ð¥ Active Streaks</div>
   <div id="streak-badges" class="streak-row"></div>
 
   <!-- Habit sections (by category, dynamically rendered) -->
@@ -77,27 +77,27 @@
 
   <!-- Submit -->
   <div class="submit-row">
-    <button id="submit-btn" class="btn-save" onclick="submitDay()">💾 Save Today</button>
+    <button id="submit-btn" class="btn-save" onclick="submitDay()">ð¾ Save Today</button>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
+<!-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
      ANALYTICS
-════════════════════════════════════════════════════════════ -->
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="sec-analytics" class="section" style="display:none">
-  <div class="section-heading">📈 Analytics</div>
+  <div class="section-heading">ð Analytics</div>
   <div class="analytics-empty" style="display:none;text-align:center;padding:40px;color:var(--muted)">
     No data yet. Start logging habits on the Dashboard!
   </div>
 
   <!-- Summary cards -->
   <div class="an-summary-grid">
-    <div class="an-card"><div class="an-val" id="an-today-score">—</div><div class="an-lbl">Today</div></div>
-    <div class="an-card"><div class="an-val" id="an-week-avg">—</div><div class="an-lbl">7-Day Avg</div></div>
-    <div class="an-card"><div class="an-val" id="an-month-avg">—</div><div class="an-lbl">30-Day Avg</div></div>
-    <div class="an-card"><div class="an-val" id="an-best-score">—</div><div class="an-lbl">Best Day</div></div>
-    <div class="an-card"><div class="an-val" id="an-top-streak">—</div><div class="an-lbl">Top Streak</div></div>
-    <div class="an-card"><div class="an-val" id="an-goals-met">—</div><div class="an-lbl">Goals Met Today</div></div>
+    <div class="an-card"><div class="an-val" id="an-today-score">â</div><div class="an-lbl">Today</div></div>
+    <div class="an-card"><div class="an-val" id="an-week-avg">â</div><div class="an-lbl">7-Day Avg</div></div>
+    <div class="an-card"><div class="an-val" id="an-month-avg">â</div><div class="an-lbl">30-Day Avg</div></div>
+    <div class="an-card"><div class="an-val" id="an-best-score">â</div><div class="an-lbl">Best Day</div></div>
+    <div class="an-card"><div class="an-val" id="an-top-streak">â</div><div class="an-lbl">Top Streak</div></div>
+    <div class="an-card"><div class="an-val" id="an-goals-met">â</div><div class="an-lbl">Goals Met Today</div></div>
   </div>
 
   <!-- Charts -->
@@ -110,48 +110,45 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
+<!-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
      SETTINGS
-════════════════════════════════════════════════════════════ -->
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="sec-settings" class="section" style="display:none">
-  <div class="section-heading">⚙️ Settings</div>
+  <div class="section-heading">âï¸ Settings</div>
   <div class="settings-grid">
 
     <!-- Account -->
     <div class="settings-card">
-      <div class="settings-card-title">👤 Account</div>
+      <div class="settings-card-title">ð¤ Account</div>
       <div class="field"><label>Name</label><input id="prof-name" type="text"/></div>
       <div class="field"><label>Email</label><input id="prof-email" type="email"/></div>
       <button class="btn-primary sm" onclick="saveProfile()">Save Profile</button>
       <hr class="divider"/>
-      <div class="settings-card-title">🔐 Change Password</div>
-      <div class="field"><label>Current Password</label><input id="pw-old"  type="password" placeholder="••••••••"/></div>
+      <div class="settings-card-title">ð Change Password</div>
+      <div class="field"><label>Current Password</label><input id="pw-old"  type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢"/></div>
       <div class="field"><label>New Password</label><input id="pw-new"  type="password" placeholder="Min 6 chars"/></div>
-      <div class="field"><label>Confirm</label><input id="pw-conf" type="password" placeholder="••••••••"/></div>
+      <div class="field"><label>Confirm</label><input id="pw-conf" type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢"/></div>
       <button class="btn-primary sm" onclick="changePassword()">Change Password</button>
     </div>
 
-    <!-- Google Sheet -->
+    <!-- Firebase Storage -->
     <div class="settings-card">
-      <div class="settings-card-title">📊 Google Sheet</div>
-      <div class="field">
-        <label>Apps Script URL</label>
-        <input id="script-url" type="url" placeholder="https://script.google.com/macros/s/…"/>
+      <div class="settings-card-title">ð¥ Firebase Storage</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+        Your data is saved to <strong style="color:var(--text)">Firebase Firestore</strong> and syncs instantly across all your devices. No setup needed â just sign in.
       </div>
-      <div class="btn-row">
-        <button class="btn-primary sm" onclick="saveScriptUrl()">Save URL</button>
-        <button class="btn-secondary sm" onclick="verifySheetConnection()">Verify Connection</button>
+      <div id="firebase-status" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--success)">
+        <span>ð¢</span> <span>Connected to Firebase</span>
       </div>
       <hr class="divider"/>
-      <div class="btn-row">
-        <button class="btn-secondary sm" onclick="openSheet()">📂 Open Sheet</button>
-        <a id="sheet-link" href="#" target="_blank" class="btn-secondary sm" style="text-decoration:none">🔗 View Sheet</a>
+      <div style="font-size:12px;color:var(--muted)">
+        Data is private to your account and secured by Firebase Security Rules.
       </div>
     </div>
 
     <!-- Categories -->
     <div class="settings-card">
-      <div class="settings-card-title">🏷️ Goal Categories</div>
+      <div class="settings-card-title">ð·ï¸ Goal Categories</div>
       <div id="cat-list"></div>
       <div class="btn-row" style="margin-top:12px">
         <button class="btn-secondary sm" onclick="addCategory()">+ Add Category</button>
@@ -162,7 +159,7 @@
     <!-- Goals -->
     <div class="settings-card full-width">
       <div class="settings-card-title" style="display:flex;justify-content:space-between;align-items:center">
-        <span>🎯 Goal Manager</span>
+        <span>ð¯ Goal Manager</span>
         <button class="btn-primary sm" onclick="showAddGoalModal()">+ Add Goal</button>
       </div>
       <div id="goal-list"></div>
@@ -171,26 +168,26 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
+<!-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
      ADMIN
-════════════════════════════════════════════════════════════ -->
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="sec-admin" class="section" style="display:none">
-  <div class="section-heading">🛡 Admin Panel</div>
+  <div class="section-heading">ð¡ Admin Panel</div>
   <div class="settings-card">
-    <div class="settings-card-title">👥 Users</div>
+    <div class="settings-card-title">ð¥ Users</div>
     <div id="admin-user-list"></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
+<!-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
      GOAL MODAL
-════════════════════════════════════════════════════════════ -->
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="goal-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
   <div class="modal-card">
-    <div class="modal-title">🎯 Goal</div>
+    <div class="modal-title">ð¯ Goal</div>
     <input type="hidden" id="gm-id"/>
     <div class="field"><label>Name</label><input id="gm-name" type="text" placeholder="e.g. Morning Walk"/></div>
-    <div class="field"><label>Icon (emoji)</label><input id="gm-icon" type="text" placeholder="🚶" maxlength="4"/></div>
+    <div class="field"><label>Icon (emoji)</label><input id="gm-icon" type="text" placeholder="ð¶" maxlength="4"/></div>
     <div class="field">
       <label>Type</label>
       <select id="gm-type" onchange="toggleGoalTypeFields()">
@@ -199,7 +196,7 @@
       </select>
     </div>
     <div class="field" id="gm-target-row"><label>Target</label><input id="gm-target" type="number" min="0" step="0.5" placeholder="10000"/></div>
-    <div class="field" id="gm-unit-row"><label>Unit</label><input id="gm-unit" type="text" placeholder="steps, min, L, hrs…"/></div>
+    <div class="field" id="gm-unit-row"><label>Unit</label><input id="gm-unit" type="text" placeholder="steps, min, L, hrsâ¦"/></div>
     <div class="field">
       <label>Category</label>
       <select id="gm-cat">
@@ -214,15 +211,15 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
+<!-- ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
      CALENDAR PICKER
-════════════════════════════════════════════════════════════ -->
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <div id="cal-overlay" class="cal-overlay" style="display:none" onclick="if(event.target===this)closeCalendar()">
   <div class="cal-popup">
     <div class="cal-header">
-      <button class="cal-nav-btn" onclick="calShiftMonth(-1)">‹</button>
+      <button class="cal-nav-btn" onclick="calShiftMonth(-1)">â¹</button>
       <span class="cal-month-label" id="cal-month-label">June 2026</span>
-      <button class="cal-nav-btn" onclick="calShiftMonth(1)">›</button>
+      <button class="cal-nav-btn" onclick="calShiftMonth(1)">âº</button>
     </div>
     <div class="cal-weekdays">
       <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
@@ -236,8 +233,12 @@
   </div>
 </div>
 
-<!-- ── Scripts ──────────────────────────────────────────────────── -->
+<!-- ââ Scripts ââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Firebase SDK (compat mode â works without a build step) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="api.js"></script>
 <script src="analytics.js"></script>
 <script src="app.js"></script>
