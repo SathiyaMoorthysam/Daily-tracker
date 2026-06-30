@@ -223,7 +223,7 @@ const API = (() => {
 
   async function goalsRemove(goalId) {
     const doc   = await _userDoc().get();
-    const goals = (doc.data()?.goals&�| []).filter(g => g.id !== goalId);
+    const goals = (doc.data()?.goals || []).filter(g => g.id !== goalId);
     await _userDoc().update({ goals });
     return { ok: true };
   }
@@ -376,4 +376,6 @@ const API = (() => {
     /* Admin */
     adminUsers, adminDeactivate, adminActivate,
     adminResetPass: (uid, _pw) => adminResetPass(uid), // _pw ignored, sends email
-  
+    adminDelete,
+  };
+})();
